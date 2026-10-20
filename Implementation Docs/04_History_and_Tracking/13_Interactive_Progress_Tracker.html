@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Windows 11 Launcher — Progress Tracker</title>
+<style>
+:root{color-scheme:dark;--bg:#090909;--panel:#151515;--line:#2a2a2a;--text:#f2f2f2;--muted:#a9a9a9;--accent:#9ed0ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1000px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap}
+h1{margin:0;font-size:25px}.muted{color:var(--muted)}button{background:#202020;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer}
+button:hover{border-color:#555}.bar{height:10px;background:#202020;border-radius:99px;overflow:hidden;margin:16px 0}.fill{height:100%;background:var(--accent);width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px}.card h2{font-size:16px;margin:0 0 8px}
+label{display:block;padding:6px 0;color:#ddd}input[type=checkbox]{margin-right:9px;accent-color:var(--accent)}
+textarea{width:100%;min-height:90px;background:#0f0f0f;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical}
+.controls{display:flex;gap:8px;flex-wrap:wrap}.status{margin-top:8px}.small{font-size:12px;color:var(--muted)}
+@media(max-width:600px){main{padding:14px}}
+</style>
+</head>
+<body>
+<main>
+<div class="top">
+<div><h1>Windows 11 Launcher — Progress Tracker</h1><div class="muted">Local browser tracker. Progress is stored only in this page's browser storage.</div></div>
+<div class="controls"><button id="save">Save</button><button id="load">Load</button><button id="reset">Reset</button><button id="export">Export data</button><button id="import">Import data</button><input id="importFile" type="file" accept="application/json" hidden></div>
+</div>
+<div class="bar"><div class="fill" id="fill"></div></div>
+<div id="summary" class="status muted"></div>
+<div class="grid" id="grid"></div>
+<div class="card" style="margin-top:12px">
+<h2>Phase Notes</h2>
+<textarea id="notes" placeholder="Record blockers, test results, decisions, performance notes..."></textarea>
+<div class="small">Export the tracker data or copy the notes into PROJECT_STATE.md at the end of each phase.</div>
+</div>
+</main>
+<script>
+const phases=[
+["P0","Architecture & Project Contract",["Production solution/project tree","Pinned toolchain and dependency register","Core/UI/plugin contracts","Security and permissions","Motion/readiness model","ChatGPT workflow"]],
+["P1","Core + Exact Command Bar",["Global hotkey","Active-monitor placement","Cold activation visual","Morph into bar","Warm activation"]],
+["P2","Prefixes & Command Language",["Prefix registry","Text + symbol aliases","Interactive prefix popup","Keyboard navigation"]],
+["P3","Search & Ranking",["Fuzzy matcher","Provider routing","Ranking","Cancellation","Progressive results"]],
+["P4","First Providers",["Applications","Files","Calculator","Commands","Settings"]],
+["P5","Actions & Menus",["Context action rail","Confirmation policy","Interactive customization menu","Dynamic actions"]],
+["P6","Local Services",["Clipboard","Snippets","Window foundations","Workflow foundations"]],
+["P7","Power User",["PowerShell/CMD","WSL","Scripts","Elevation broker"]],
+["P8","Web + AI",["Web provider","AI provider","Offline mode"]],
+["P9","Utilities",["OCR","Screenshot","Color picker","Always on Top","Other modular utilities"]],
+["P10","Hardening & Release",["Testing","Diagnostics","Privacy","Recovery","Installer","Compatibility","Application/installer signing","Dependency/license inventory","Release checklist"]]
+];
+const key="launcher-progress-v3";
+const grid=document.getElementById("grid"), fill=document.getElementById("fill"), summary=document.getElementById("summary"), notes=document.getElementById("notes");
+function render(state={}){
+ grid.innerHTML="";
+ let total=0,done=0;
+ phases.forEach(([id,name,tasks])=>{
+   const card=document.createElement("section");card.className="card";
+   const h=document.createElement("h2");h.textContent=id+" — "+name;card.appendChild(h);
+   tasks.forEach((t,i)=>{
+     total++;const lab=document.createElement("label");const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!state[id+"-"+i];
+     cb.addEventListener("change",()=>{save();render(loadState());});lab.append(cb,t);card.appendChild(lab);if(cb.checked)done++;
+   });
+   grid.appendChild(card);
+ });
+ const pct=total?Math.round(done/total*100):0;fill.style.width=pct+"%";summary.textContent=`${done}/${total} tasks complete — ${pct}%`;
+}
+function loadState(){try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}}
+function save(){
+ const s={};document.querySelectorAll('input[type=checkbox]').forEach((c,idx)=>{if(c.checked)s[findKey(idx)]=true});
+ s.notes=notes.value;localStorage.setItem(key,JSON.stringify(s));
+}
+function findKey(idx){let n=0;for(const [id,,tasks] of phases){for(let i=0;i<tasks.length;i++){if(n++===idx)return id+"-"+i}}}
+function load(){const s=loadState();notes.value=s.notes||"";render(s)}
+document.getElementById("save").onclick=()=>{save();render(loadState())};
+document.getElementById("load").onclick=load;
+document.getElementById("reset").onclick=()=>{localStorage.removeItem(key);notes.value="";render({})};
+document.getElementById("export").onclick=()=>{const b=new Blob([JSON.stringify(loadState(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="launcher-progress-v3.json";a.click();URL.revokeObjectURL(a.href)};
+document.getElementById("import").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{localStorage.setItem(key,JSON.stringify(JSON.parse(r.result)));load()}catch(_){alert("That file is not valid tracker data.")}};r.readAsText(f)});
+notes.addEventListener("input",save);
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "pack_version": "3.0",
+  "schema_version": "3.0",
+  "status": "pre-implementation-freeze",
+  "refresh_date": "2026-10-20",
+  "entry_point": "README.md",
+  "archive_index": "V3.0_ARCHIVE_INDEX.md",
+  "release_notes": "V3.0_RELEASE_NOTES.md",
+  "canonical": "00_Canonical/04_Project_Overview.docx",
+  "highest_level_contract": "00_Canonical/00_PROJECT_CONSTITUTION.docx",
+  "implementation_companion": "02_Engineering/Implementation_Specification.docx",
+  "groups": {
+    "00_Canonical": [
+      "00_Canonical/00_PROJECT_CONSTITUTION.docx",
+      "00_Canonical/04_Project_Overview.docx"
+    ],
+    "01_Product_and_Roadmap": [
+      "01_Product_and_Roadmap/01_Project_Roadmap.docx",
+      "01_Product_and_Roadmap/02_Project_Progression.docx",
+      "01_Product_and_Roadmap/03_Launcher_Questline.docx",
+      "01_Product_and_Roadmap/05_Project_Conversation_Archive.docx",
+      "01_Product_and_Roadmap/15_Future_Roadmap.docx",
+      "01_Product_and_Roadmap/16_Extension_Pack.docx"
+    ],
+    "02_Engineering": [
+      "02_Engineering/Implementation_Specification.docx",
+      "02_Engineering/06_PROJECT_STATE.docx",
+      "02_Engineering/07_SECURITY_MODEL.docx",
+      "02_Engineering/08_TESTING_STRATEGY.docx",
+      "02_Engineering/09_CHATGPT_WORKFLOW.docx",
+      "02_Engineering/10_WINDOWS_COMPATIBILITY.docx",
+      "02_Engineering/11_DATA_PRIVACY.docx",
+      "02_Engineering/12_RELEASE_CHECKLIST.docx",
+      "02_Engineering/14_MOTION_AND_INTERACTION_SPEC.docx"
+    ],
+    "03_Live_Repository": [
+      "03_Live_Repository/ARCHITECTURE.md",
+      "03_Live_Repository/DECISIONS.md",
+      "03_Live_Repository/DEPENDENCIES.md",
+      "03_Live_Repository/NEXT_PHASE.md",
+      "03_Live_Repository/PHASE_STATUS.md",
+      "03_Live_Repository/PROJECT_STATE.md",
+      "03_Live_Repository/TESTS.md"
+    ],
+    "04_History_and_Tracking": [
+      "04_History_and_Tracking/CHANGELOG.md",
+      "04_History_and_Tracking/13_Interactive_Progress_Tracker.html"
+    ],
+    "05_Meta": [
+      "05_Meta/PACK_MANIFEST.json",
+      "05_Meta/SOURCE_AUDIT.md"
+    ]
+  },
+  "source_archive": "Windows11_Launcher_V2_8_Audited(1).zip",
+  "production_source_included": false,
+  "historical_preservation": "V2.x decision/correction history is retained in the active documents and changelog where it explains the current baseline.",
+  "toolchain_snapshot": {
+    "dotnet_sdk": "10.0.402",
+    "dotnet_runtime": "10.0.13",
+    "csharp": "14",
+    "windows_app_sdk": "2.5.1 Stable",
+    "windows_sdk": "10.0.26100.9457",
+    "minimum_os": "Windows 11 24H2 / build 26100+"
+  },
+  "phase_0_gate": "Project-owner confirmation of the Windows 11 24H2 minimum supported OS remains required.",
+  "notes": "V3.0 reorganizes and refreshes the V2.8 audited pack without expanding product scope or architecture. Source audit is included."
+}
