@@ -24,7 +24,8 @@
 ## Phase 0 progress
 - Done (documents): ADR-0013 (proposed), ADR-0014, ADR-0015; state files and dependency register updated.
 - Done (scaffold, built on the pinned toolchain by the owner): `Launcher.sln`, `global.json`, `Directory.Build.props`, `Directory.Packages.props`, `nuget.config`, 14 `src/` library projects, empty `plugins/ installer/ scripts/ docs/ LICENSES/ tests/`.
-- Not done: `Launcher.App`, contracts, diagnostics, test projects, CI skeleton, clean restore/build/test evidence.
+- Done (2026-10-21): `Launcher.App` created from the Visual Studio WinUI template and converted to unpackaged, framework-dependent, x64 (see ADR-0014 addendum). Debug and Release builds of the full solution including `Launcher.App` reported green by the owner. The owner started the app once with `dotnet run -c Debug`; an empty window opened with no error. This is a manual smoke check only, not an automated test.
+- Not done: contracts, diagnostics, test projects, CI skeleton, a CI-equivalent clean restore/build/test run, `Launcher.App` project references.
 
 ## Provisional scaffold decisions (ratify in the contracts step)
 - `Launcher.PluginHost` and `Launcher.PrivilegedBroker` are class libraries for now; they become executables when their phases begin.
@@ -34,14 +35,15 @@
 
 ## Known issues / gates
 - No gate is open. Minimum OS confirmed (ADR-0015).
-- Windows SDK build deviation (26100.8249 installed vs 26100.9457 documented): see ADR-0014.
+- Windows SDK build deviation (26100.8249 installed and pinned for BuildTools vs 26100.9457 documented): see ADR-0014. Decide whether to amend the documented number or install 9457.
+- Deviations from the Visual Studio WinUI template are recorded in the ADR-0014 addendum.
 - No production implementation beyond the empty scaffold. Restore/Debug/Release builds are verified; no tests exist or have run, and no CI evidence exists yet.
 
 ## Decisions
 See `DECISIONS.md` for ADR-0001 through ADR-0011 and subsequent records.
 
 ## Next action
-Create `Launcher.App` (WinUI 3, unpackaged, framework-dependent, x64) from the Visual Studio template inside `src\`, and provide its `.csproj` so it can be reconciled with central package management and `Directory.Build.props`. Then: contracts, diagnostics, test projects (framework pending owner approval) and CI skeleton.
+Choose the test framework (MSTest, xUnit or NUnit; each is a dependency requiring a `DEPENDENCIES.md` entry). Then: Core/UI/Search/Plugin contracts and the `LauncherState` model, structured diagnostics, test projects including the project-reference architecture test, and the CI skeleton.
 
 ## Rollback point
 V3.0 pre-implementation documentation freeze.

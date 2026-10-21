@@ -4,10 +4,10 @@ Keep this file short. It is the live handoff state for implementation.
 
 ## Current state
 - Pack: V3.0 documentation baseline
-- Production source repository: solution scaffold created on branch `phase-0-foundation` (14 library projects, no feature code; `Launcher.App` not yet created)
+- Production source repository: solution scaffold on branch `phase-0-foundation` (14 library projects plus the `Launcher.App` WinUI project, no feature code)
 - Current phase: Phase 0 — Architecture & Project Contract
 - Phase status: IN PROGRESS (started 2026-10-21; branch `phase-0-foundation`)
-- Build status: restore, Debug and Release builds succeeded on the owner machine (SDK 10.0.402, `net10.0-windows10.0.26100.0`, 14 library projects, 2026-10-21). No CI-equivalent build yet; `Launcher.App` not yet included.
+- Build status: restore, Debug and Release builds succeeded on the owner machine (SDK 10.0.402, `net10.0-windows10.0.26100.0`, 2026-10-21). The 14 library results were pasted; the later run including `Launcher.App` was reported green by the owner. `Launcher.App` starts and shows an empty window (manual check). No CI-equivalent build yet.
 - Test status: no production tests yet (test projects and framework not yet chosen)
 
 ## Current gate
@@ -16,8 +16,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 ## Open items
 - Windows SDK deviation: installed 10.0.26100.8249 vs documented 10.0.26100.9457 (ADR-0014). Resolve by installing 9457 or amending the documented build via ADR.
 - ADR-0013 (coding agent: ChatGPT → Claude) awaits owner sign-off.
-- `Launcher.App` (WinUI) must be created from the Visual Studio template on the owner machine (next action).
-- Test framework and CI image not yet selected (dependency/ADR decision).
+- Test framework and CI image not yet selected (dependency/ADR decision): next decision needed.
 - Reference choices for Diagnostics, Security and Motion are provisional (see PHASE_STATUS.md).
 
 ## Verified baseline
@@ -33,7 +32,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 - Named Pipes initial plugin IPC
 
 ## Next action
-Create `Launcher.App` from the Visual Studio WinUI template inside `src\` with unpackaged, framework-dependent, x64 settings, and share its `.csproj` so it can be reconciled with `Directory.Packages.props` and `Directory.Build.props`.
+Owner chooses the test framework; then contracts, diagnostics, test projects and the CI skeleton (see PHASE_STATUS.md).
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

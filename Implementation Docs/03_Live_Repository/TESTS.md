@@ -5,8 +5,8 @@ Result values: `TODO`, `PASS`, `FAIL`, or `BLOCKED`. Compilation alone never mak
 | Area | Test | Result | Notes |
 |---|---|---|---|
 | Build | Clean restore/build | PASS | Fresh scaffold checkout; Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 projects; output pasted by owner; no warnings shown |
-| Build | Debug build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 projects; output pasted by owner; no warnings shown |
-| Build | Release build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 projects; output pasted by owner; no warnings shown |
+| Build | Debug build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 library projects (output pasted). Re-run with Launcher.App added: owner reported green (output not pasted) |
+| Build | Release build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 library projects (output pasted). Re-run with Launcher.App added: owner reported green (output not pasted) |
 | Build | CI-equivalent build | TODO | |
 | Architecture | Project references obey dependency direction | TODO | |
 | Runtime | Single-instance behavior | TODO | |

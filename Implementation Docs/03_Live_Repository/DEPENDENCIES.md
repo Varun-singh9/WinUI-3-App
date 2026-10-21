@@ -37,6 +37,28 @@ Pre-implementation baseline. No third-party production package has been approved
 | Visual Studio | Record at Phase 0 | Community 2026 18.11 stable, WinUI workload | Recorded |
 | Host OS | 24H2 floor | Windows 11 25H2 (26200.9457) x64 | Dev machine is above the floor; floor testing needs a 24H2 machine |
 
+### Resolved package versions for Launcher.App (owner machine, 2026-10-21)
+
+Output of `dotnet list package --include-transitive`, pasted by the owner. Direct references are pinned in `Directory.Packages.props`; the rest are resolved transitively through Windows App SDK 2.5.1.
+
+| Package | Resolved version | Origin |
+|---|---|---|
+| Microsoft.WindowsAppSDK | 2.5.1 | Direct, pinned |
+| Microsoft.Windows.SDK.BuildTools | 10.0.26100.8249 | Direct, pinned (see ADR-0014 addendum) |
+| Microsoft.WindowsAppSDK.Runtime | 2.5.1 | Transitive |
+| Microsoft.WindowsAppSDK.WinUI | 2.3.9 | Transitive |
+| Microsoft.WindowsAppSDK.Foundation | 2.3.12 | Transitive |
+| Microsoft.WindowsAppSDK.Base | 2.0.4 | Transitive |
+| Microsoft.WindowsAppSDK.InteractiveExperiences | 2.1.9 | Transitive |
+| Microsoft.WindowsAppSDK.DWrite | 2.1.0 | Transitive |
+| Microsoft.WindowsAppSDK.AI | 2.5.5 | Transitive |
+| Microsoft.WindowsAppSDK.ML | 2.1.94 | Transitive |
+| Microsoft.WindowsAppSDK.Search | 2.5.5 | Transitive |
+| Microsoft.WindowsAppSDK.Widgets | 2.0.5 | Transitive |
+| Microsoft.Windows.SDK.BuildTools.MSIX | 1.7.251221100 | Transitive |
+
+The Windows App SDK component packages version independently of the 2.5.1 umbrella; the differing numbers above are the observed resolution result. The AI, ML, Search and Widgets component packages arrive with the umbrella package and are not used by any project code. They are platform components, not separate third-party dependencies.
+
 ## Third-Party Dependencies
 
 | Dependency | Version | License | Source | Why | Runtime/resource impact | Removal/replacement plan | ADR |

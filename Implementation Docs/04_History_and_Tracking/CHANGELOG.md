@@ -9,7 +9,12 @@
 ### Verified
 - Owner-machine restore, Debug and Release builds of all 14 scaffold projects succeeded on SDK 10.0.402 (TESTS.md build rows updated to PASS).
 
+### Added (Launcher.App)
+- `Launcher.App` WinUI project (unpackaged, framework-dependent, x64) with an empty placeholder window; template defaults replaced (ADR-0014 addendum).
+- Resolved Windows App SDK package versions recorded in DEPENDENCIES.md.
+
 ### Changed
+- `Microsoft.Windows.SDK.BuildTools` pinned to 10.0.26100.8249 (Visual Studio had inserted the excluded 10.0.28000.2705).
 - State files, dependency register and gate wording updated for the cleared 24H2 gate. ADR-0012 moved above the Rules section in DECISIONS.md (content unchanged).
 - Baseline documents were not edited for the Windows SDK build-number deviation; it is recorded in ADR-0014 and DEPENDENCIES.md.
 
