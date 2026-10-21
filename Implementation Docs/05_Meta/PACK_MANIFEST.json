@@ -59,7 +59,7 @@
     "dotnet_runtime": "10.0.13",
     "csharp": "14",
     "windows_app_sdk": "2.5.1 Stable",
-    "windows_sdk": "10.0.26100.9457",
+    "windows_sdk": "10.0.26100.8249",
     "minimum_os": "Windows 11 24H2 / build 26100+"
   },
   "phase_0_gate": "Cleared: project owner confirmed Windows 11 24H2 as the minimum supported OS on 2026-10-21 (ADR-0015).",

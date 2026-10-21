@@ -19,7 +19,7 @@ Pre-implementation baseline. No third-party production package has been approved
 | .NET SDK | 10.0.402 listed by Microsoft on 2026-10-20; exact installed SDK is pinned in `global.json` at Phase 0 | Pin at Phase 0 |
 | C# | 14 | Approved |
 | Windows App SDK | 2.5.1 Stable | Approved |
-| Windows SDK | 10.0.26100.9457 baseline build | Approved baseline |
+| Windows SDK | 10.0.26100.8249 baseline build (amended from 9457, ADR-0016) | Approved baseline |
 | Target framework | `net10.0-windows10.0.26100.0` | Phase 0 verify |
 | Minimum OS | Windows 11 24H2 / build 26100+ | Approved (owner, 2026-10-21, ADR-0015) |
 | Architecture | x64 only for now; Arm64 evaluation before release | Selected (ADR-0014) |
@@ -30,8 +30,8 @@ Pre-implementation baseline. No third-party production package has been approved
 
 | Item | Documented | Observed on owner machine | Treatment |
 |---|---|---|---|
-| Windows SDK | 10.0.26100.9457 | 10.0.26100.8249 installed | Deviation recorded in ADR-0014; baseline text above intentionally left unchanged |
-| Windows SDK 10.0.28000 | Not adopted | Installed | Must not be used |
+| Windows SDK | 10.0.26100.8249 (amended from 9457, ADR-0016) | 10.0.26100.8249 installed | Resolved: documented baseline amended to match; BuildTools pinned to the same build |
+| Windows SDK 10.0.28000 | Not adopted | Not present in the Windows Kits Include folder when checked | Must not be used; `Microsoft.Windows.SDK.BuildTools` 10.0.28000.x is excluded too |
 | .NET SDK | 10.0.402 | 10.0.402 (also 10.0.401, 9.0.318) | Pinned in `global.json`, rollForward `latestPatch`, allowPrerelease false |
 | Windows App SDK | 2.5.1 Stable | 2.5.1 runtime and NuGet package present | Pinned in `Directory.Packages.props`; verify package id on first VS restore |
 | Visual Studio | Record at Phase 0 | Community 2026 18.11 stable, WinUI workload | Recorded |
@@ -63,7 +63,11 @@ The Windows App SDK component packages version independently of the 2.5.1 umbrel
 
 | Dependency | Version | License | Source | Why | Runtime/resource impact | Removal/replacement plan | ADR |
 |---|---|---|---|---|---|---|---|
-| None approved yet | — | — | — | — | — | — | — |
+| xunit.v3 | 4.0.1 | Apache-2.0 (confirm at release review) | nuget.org | Test framework (ADR-0017) | Test-time only; not shipped; test projects become executables | Replace with another framework and rewrite test attributes/assertions | ADR-0017 |
+| Microsoft.NET.Test.Sdk | 18.10.0 | MIT | nuget.org | Connects test projects to the Visual Studio Test Platform and `dotnet test` | Test-time only; not shipped | Remove if the project later moves to Microsoft Testing Platform mode | ADR-0017 |
+| xunit.runner.visualstudio | 4.0.1 | Apache-2.0 (confirm at release review) | nuget.org | xUnit adapter for Visual Studio Test Explorer and `dotnet test` | Test-time only; not shipped | Remove together with xunit.v3 or on a move to Microsoft Testing Platform mode | ADR-0017 |
+
+Transitive packages pulled in by the three test packages are recorded after the first restore on the owner machine (`dotnet list package --include-transitive`). Until then they are unrecorded.
 
 ## Release dependency review
 Before release verify exact versions, license compatibility, notices, unexpected runtime/network/elevation behavior, package provenance, and final inventory.

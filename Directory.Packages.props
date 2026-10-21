@@ -20,4 +20,14 @@
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.8249" />
   </ItemGroup>
 
+  <!--
+    Test tooling (ADR-0017). Used only by projects under tests/; never shipped.
+    xunit.v3 4.0.2 (2026-10-09) exists; 4.0.1 (2026-09-12) is pinned because it is older and widely used.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="xunit.v3" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
+  </ItemGroup>
+
 </Project>

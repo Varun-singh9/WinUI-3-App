@@ -14,16 +14,16 @@ Keep this file short. It is the live handoff state for implementation.
 None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project owner on 2026-10-21 (ADR-0015).
 
 ## Open items
-- Windows SDK deviation: installed 10.0.26100.8249 vs documented 10.0.26100.9457 (ADR-0014). Resolve by installing 9457 or amending the documented build via ADR.
 - ADR-0013 (coding agent: ChatGPT → Claude) awaits owner sign-off.
-- Test framework and CI image not yet selected (dependency/ADR decision): next decision needed.
+- CI image not yet selected.
+- `Launcher.Core.Tests` (xUnit v3, ADR-0017) is written but has not been restored, built or run on the owner machine.
 - Reference choices for Diagnostics, Security and Motion are provisional (see PHASE_STATUS.md).
 
 ## Verified baseline
 - Native WinUI 3/XAML/Composition
 - .NET 10 / C# 14
 - Windows App SDK 2.5.1 Stable
-- Windows SDK 10.0.26100.9457 baseline
+- Windows SDK 10.0.26100.8249 baseline (amended from 9457, ADR-0016)
 - Core unelevated
 - Default-deny capabilities
 - Out-of-process plugins
@@ -32,7 +32,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 - Named Pipes initial plugin IPC
 
 ## Next action
-Owner chooses the test framework; then contracts, diagnostics, test projects and the CI skeleton (see PHASE_STATUS.md).
+On the owner machine: restore, build and run `dotnet test` for the new `Launcher.Core.Tests` project and record the result. Then contracts, diagnostics and the CI skeleton (see PHASE_STATUS.md).
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

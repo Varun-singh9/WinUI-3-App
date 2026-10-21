@@ -51,7 +51,7 @@ Manifest and package metadata.
 - Native WinUI 3 + XAML + Windows Composition for production UI.
 - .NET 10 LTS / C# 14.
 - Windows App SDK 2.5.1 Stable.
-- Windows SDK 10.0.26100.x family; V3.0 records 10.0.26100.9457 as the current baseline build verified during this refresh.
+- Windows SDK 10.0.26100.x family; the baseline build is 10.0.26100.8249 (amended from 10.0.26100.9457 on 2026-10-21, ADR-0016).
 - Minimum supported OS: Windows 11 24H2 (build 26100) or later, confirmed by the project owner on 2026-10-21 (ADR-0015).
 - SQLite for structured local data.
 - Named Pipes for initial general plugin IPC.

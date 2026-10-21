@@ -25,7 +25,9 @@
 - Done (documents): ADR-0013 (proposed), ADR-0014, ADR-0015; state files and dependency register updated.
 - Done (scaffold, built on the pinned toolchain by the owner): `Launcher.sln`, `global.json`, `Directory.Build.props`, `Directory.Packages.props`, `nuget.config`, 14 `src/` library projects, empty `plugins/ installer/ scripts/ docs/ LICENSES/ tests/`.
 - Done (2026-10-21): `Launcher.App` created from the Visual Studio WinUI template and converted to unpackaged, framework-dependent, x64 (see ADR-0014 addendum). Debug and Release builds of the full solution including `Launcher.App` reported green by the owner. The owner started the app once with `dotnet run -c Debug`; an empty window opened with no error. This is a manual smoke check only, not an automated test.
-- Not done: contracts, diagnostics, test projects, CI skeleton, a CI-equivalent clean restore/build/test run, `Launcher.App` project references.
+- Written, not yet run on the owner machine (2026-10-21): xUnit v3 test tooling (ADR-0017) and `tests/Launcher.Core.Tests` with six dependency-direction checks. The check logic was run in the agent sandbox against the real project files (all pass) and against deliberately broken copies (all violations detected), using a plain console harness. The xUnit packages could not be restored in the sandbox, so the test project itself is unbuilt.
+- Deferred on purpose: the other six test projects from Implementation Specification §3 (created with their first real tests, so there are no placeholder tests).
+- Not done: contracts, diagnostics, CI skeleton, a CI-equivalent clean restore/build/test run, `Launcher.App` project references.
 
 ## Provisional scaffold decisions (ratify in the contracts step)
 - `Launcher.PluginHost` and `Launcher.PrivilegedBroker` are class libraries for now; they become executables when their phases begin.
@@ -35,7 +37,7 @@
 
 ## Known issues / gates
 - No gate is open. Minimum OS confirmed (ADR-0015).
-- Windows SDK build deviation (26100.8249 installed and pinned for BuildTools vs 26100.9457 documented): see ADR-0014. Decide whether to amend the documented number or install 9457.
+- Windows SDK build number amended to 10.0.26100.8249 (ADR-0016): no open toolchain deviation.
 - Deviations from the Visual Studio WinUI template are recorded in the ADR-0014 addendum.
 - No production implementation beyond the empty scaffold. Restore/Debug/Release builds are verified; no tests exist or have run, and no CI evidence exists yet.
 
@@ -43,7 +45,7 @@
 See `DECISIONS.md` for ADR-0001 through ADR-0011 and subsequent records.
 
 ## Next action
-Choose the test framework (MSTest, xUnit or NUnit; each is a dependency requiring a `DEPENDENCIES.md` entry). Then: Core/UI/Search/Plugin contracts and the `LauncherState` model, structured diagnostics, test projects including the project-reference architecture test, and the CI skeleton.
+Owner: `dotnet restore`, `dotnet build` (Debug and Release) and `dotnet test` on the solution; paste the output. Then: Core/UI/Search/Plugin contracts with the `LauncherState` model, structured diagnostics, and the CI skeleton.
 
 ## Rollback point
 V3.0 pre-implementation documentation freeze.

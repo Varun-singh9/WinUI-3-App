@@ -13,7 +13,12 @@
 - `Launcher.App` WinUI project (unpackaged, framework-dependent, x64) with an empty placeholder window; template defaults replaced (ADR-0014 addendum).
 - Resolved Windows App SDK package versions recorded in DEPENDENCIES.md.
 
+### Added (tests)
+- ADR-0016 (documented Windows SDK baseline build amended to 10.0.26100.8249) and ADR-0017 (xUnit.net v3 as the test framework).
+- `tests/Launcher.Core.Tests` with dependency-direction architecture checks; xUnit packages pinned in `Directory.Packages.props` and registered in DEPENDENCIES.md.
+
 ### Changed
+- Documented Windows SDK build amended from 10.0.26100.9457 to 10.0.26100.8249 in DEPENDENCIES.md, ARCHITECTURE.md, PROJECT_STATE.md, README.md and PACK_MANIFEST.json (ADR-0016).
 - `Microsoft.Windows.SDK.BuildTools` pinned to 10.0.26100.8249 (Visual Studio had inserted the excluded 10.0.28000.2705).
 - State files, dependency register and gate wording updated for the cleared 24H2 gate. ADR-0012 moved above the Rules section in DECISIONS.md (content unchanged).
 - Baseline documents were not edited for the Windows SDK build-number deviation; it is recorded in ADR-0014 and DEPENDENCIES.md.

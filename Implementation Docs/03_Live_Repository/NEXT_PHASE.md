@@ -29,7 +29,9 @@ Create the actual production .NET solution and freeze the executable engineering
 3. Toolchain pin: values recorded in ADR-0014; machine verification pending.
 4. `DEPENDENCIES.md`: Phase 0 values and the SDK deviation recorded.
 5. Project references: set per §4.1 with the provisional choices in PHASE_STATUS.md.
-6–9. Not started.
+6–7. Not started.
+8. Test projects: xUnit v3 chosen (ADR-0017); `Launcher.Core.Tests` written, not yet run on the owner machine; CI skeleton not started.
+9. Not started.
 
 ## Do not change
 - Core ≠ Feature.
