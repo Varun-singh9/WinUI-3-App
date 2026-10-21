@@ -7,10 +7,17 @@
 
   <ItemGroup>
     <!--
-      Windows App SDK 2.5.1 Stable (ADR-0008, ADR-0014). Consumed only by Launcher.App, which is created
-      from the Visual Studio WinUI template. Verify the package id and version on the first VS restore.
+      Windows App SDK 2.5.1 Stable (ADR-0008, ADR-0014). Consumed only by Launcher.App.
     -->
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+
+    <!--
+      Windows SDK build tools, kept on the 10.0.26100.x baseline (ADR-0008, ADR-0014).
+      10.0.26100.8249 matches the Windows SDK build installed on the owner machine.
+      Do NOT move this to the 10.0.28000.x line: that SDK family is outside the approved baseline.
+      Visual Studio's "Add New Project" originally inserted 10.0.28000.2705 here; that was reverted.
+    -->
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.8249" />
   </ItemGroup>
 
 </Project>
