@@ -17,6 +17,9 @@
 - ADR-0016 (documented Windows SDK baseline build amended to 10.0.26100.8249) and ADR-0017 (xUnit.net v3 as the test framework).
 - `tests/Launcher.Core.Tests` with dependency-direction architecture checks; xUnit packages pinned in `Directory.Packages.props` and registered in DEPENDENCIES.md.
 
+### Verified (tests)
+- Owner machine: `dotnet test` on Microsoft Testing Platform ran 6 architecture tests, 6 passed (TESTS.md architecture row PASS).
+
 ### Fixed
 - `dotnet test` failed on .NET 10 with xunit.v3 4.x (VSTest vs Microsoft Testing Platform). `global.json` now opts in to Microsoft Testing Platform and the VSTest-only packages (`Microsoft.NET.Test.Sdk`, `xunit.runner.visualstudio`) are removed (ADR-0017 addendum).
 

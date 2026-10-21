@@ -8,7 +8,7 @@ Keep this file short. It is the live handoff state for implementation.
 - Current phase: Phase 0 — Architecture & Project Contract
 - Phase status: IN PROGRESS (started 2026-10-21; branch `phase-0-foundation`)
 - Build status: restore, Debug and Release builds succeeded on the owner machine (SDK 10.0.402, `net10.0-windows10.0.26100.0`, 2026-10-21). The 14 library results were pasted; the later run including `Launcher.App` was reported green by the owner. `Launcher.App` starts and shows an empty window (manual check). No CI-equivalent build yet.
-- Test status: no production tests yet (test projects and framework not yet chosen)
+- Test status: 6 architecture tests pass (Launcher.Core.Tests, owner machine, 2026-10-21); no feature tests yet because no feature code exists
 
 ## Current gate
 None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project owner on 2026-10-21 (ADR-0015).
@@ -16,7 +16,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 ## Open items
 - ADR-0013 (coding agent: ChatGPT → Claude) awaits owner sign-off.
 - CI image not yet selected.
-- `Launcher.Core.Tests` (xUnit v3, ADR-0017) builds in Debug on the owner machine, but `dotnet test` failed (VSTest vs Microsoft Testing Platform on .NET 10). The fix is prepared and unverified.
+- `Launcher.Core.Tests` (xUnit v3, ADR-0017): 6 of 6 tests pass on the owner machine (Microsoft Testing Platform via `global.json`).
 - Reference choices for Diagnostics, Security and Motion are provisional (see PHASE_STATUS.md).
 
 ## Verified baseline
@@ -32,7 +32,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 - Named Pipes initial plugin IPC
 
 ## Next action
-Owner applies the ADR-0017 fix and runs `dotnet test`; record the result. Then contracts, diagnostics and the CI skeleton (see PHASE_STATUS.md).
+Plan and implement the Phase 0 contracts (LauncherState and the Core/Search/UI/Plugin interfaces), then structured diagnostics and the CI skeleton (see PHASE_STATUS.md).
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

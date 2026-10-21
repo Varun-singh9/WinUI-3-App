@@ -65,7 +65,19 @@ The Windows App SDK component packages version independently of the 2.5.1 umbrel
 |---|---|---|---|---|---|---|---|
 | xunit.v3 | 4.0.1 | Apache-2.0 (confirm at release review) | nuget.org | Test framework, runs on Microsoft Testing Platform v2 (ADR-0017) | Test-time only; not shipped; test projects become executables; transitive MTP packages include telemetry components (ADR-0017 addendum) | Replace with another framework and rewrite test attributes/assertions | ADR-0017 |
 
-Transitive packages pulled in by `xunit.v3` are recorded after the first restore that matches the final package set (`dotnet list package --include-transitive`). The earlier list, taken while the VSTest-only packages were still referenced, is superseded and is not recorded here.
+Resolved transitive packages for `Launcher.Core.Tests` (owner machine, 2026-10-21, `dotnet list package --include-transitive`, final package set). All arrive through `xunit.v3` 4.0.1 and are test-time only:
+
+| Package | Resolved version |
+|---|---|
+| xunit.v3.mtp-v2, xunit.v3.core.mtp-v2, xunit.v3.extensibility.core, xunit.v3.common, xunit.v3.assert, xunit.v3.runner.common, xunit.v3.runner.inproc.console | 4.0.1 |
+| xunit.analyzers | 2.1.0 |
+| Microsoft.Testing.Platform, Microsoft.Testing.Platform.MSBuild, Microsoft.Testing.Extensions.Telemetry, Microsoft.Testing.Extensions.TrxReport.Abstractions | 2.4.0 |
+| Microsoft.ApplicationInsights | 2.23.0 |
+| Microsoft.Bcl.AsyncInterfaces | 6.0.0 |
+| Microsoft.Win32.Registry | 5.0.0 |
+| System.Security.AccessControl | 6.0.1 |
+
+`Microsoft.Testing.Extensions.Telemetry` and `Microsoft.ApplicationInsights` are telemetry components. Opt-out for developer machines and CI is handled in the CI skeleton step; licenses of the transitive packages are covered by the release dependency review.
 
 ## Release dependency review
 Before release verify exact versions, license compatibility, notices, unexpected runtime/network/elevation behavior, package provenance, and final inventory.

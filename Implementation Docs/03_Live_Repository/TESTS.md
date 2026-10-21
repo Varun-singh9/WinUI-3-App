@@ -8,7 +8,7 @@ Result values: `TODO`, `PASS`, `FAIL`, or `BLOCKED`. Compilation alone never mak
 | Build | Debug build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; Output pasted for 14 libraries, and again for the full solution including Launcher.App and Launcher.Core.Tests (2026-10-21) |
 | Build | Release build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 library projects (output pasted). Re-run with Launcher.App added: owner reported green (output not pasted) |
 | Build | CI-equivalent build | TODO | |
-| Architecture | Project references obey dependency direction | TODO | Test written in Launcher.Core.Tests (2026-10-21); not yet run on the owner machine |
+| Architecture | Project references obey dependency direction | PASS | Owner machine, 2026-10-21: `dotnet test Launcher.sln -c Debug` ran Launcher.Core.Tests, 6 passed, 0 failed (output pasted). Covers the allowed-reference table, Core isolation, no references to the app, host/broker isolation and no cycles. Rules are provisional until the contracts step |
 | Runtime | Single-instance behavior | TODO | |
 | Hotkey | Opens launcher | TODO | |
 | Activation | Cold loop starts immediately | TODO | |
