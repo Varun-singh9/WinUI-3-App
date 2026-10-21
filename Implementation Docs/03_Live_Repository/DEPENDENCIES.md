@@ -21,10 +21,21 @@ Pre-implementation baseline. No third-party production package has been approved
 | Windows App SDK | 2.5.1 Stable | Approved |
 | Windows SDK | 10.0.26100.9457 baseline build | Approved baseline |
 | Target framework | `net10.0-windows10.0.26100.0` | Phase 0 verify |
-| Minimum OS | Windows 11 24H2 / build 26100+ | Owner gate |
-| Architecture | x64 initially; Arm64 evaluation before release | Phase 0 verify |
-| Deployment | To be selected and recorded before scaffold freeze | Phase 0 |
+| Minimum OS | Windows 11 24H2 / build 26100+ | Approved (owner, 2026-10-21, ADR-0015) |
+| Architecture | x64 only for now; Arm64 evaluation before release | Selected (ADR-0014) |
+| Deployment | Unpackaged, framework-dependent | Selected (ADR-0014); confirm interpretation before installer work |
 | SQLite | Exact library/package selected during implementation | Pending |
+
+## Phase 0 recorded values and deviations (2026-10-21)
+
+| Item | Documented | Observed on owner machine | Treatment |
+|---|---|---|---|
+| Windows SDK | 10.0.26100.9457 | 10.0.26100.8249 installed | Deviation recorded in ADR-0014; baseline text above intentionally left unchanged |
+| Windows SDK 10.0.28000 | Not adopted | Installed | Must not be used |
+| .NET SDK | 10.0.402 | 10.0.402 (also 10.0.401, 9.0.318) | Pinned in `global.json`, rollForward `latestPatch`, allowPrerelease false |
+| Windows App SDK | 2.5.1 Stable | 2.5.1 runtime and NuGet package present | Pinned in `Directory.Packages.props`; verify package id on first VS restore |
+| Visual Studio | Record at Phase 0 | Community 2026 18.11 stable, WinUI workload | Recorded |
+| Host OS | 24H2 floor | Windows 11 25H2 (26200.9457) x64 | Dev machine is above the floor; floor testing needs a 24H2 machine |
 
 ## Third-Party Dependencies
 

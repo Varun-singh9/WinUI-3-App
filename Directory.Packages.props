@@ -1,0 +1,16 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Windows App SDK 2.5.1 Stable (ADR-0008, ADR-0014). Consumed only by Launcher.App, which is created
+      from the Visual Studio WinUI template. Verify the package id and version on the first VS restore.
+    -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+  </ItemGroup>
+
+</Project>

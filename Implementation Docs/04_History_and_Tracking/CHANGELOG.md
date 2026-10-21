@@ -1,5 +1,15 @@
 # Changelog — Windows 11 Launcher Project Document Pack
 
+## Phase 0 — In progress — 2026-10-21
+
+### Added
+- ADR-0013 (coding agent ChatGPT → Claude, proposed), ADR-0014 (Phase 0 toolchain/deployment values and Windows SDK deviation), ADR-0015 (24H2 minimum OS confirmed).
+- Solution scaffold: `Launcher.sln`, `global.json`, `Directory.Build.props`, `Directory.Packages.props`, `nuget.config`, 14 `src/` library projects, root README.
+
+### Changed
+- State files, dependency register and gate wording updated for the cleared 24H2 gate. ADR-0012 moved above the Rules section in DECISIONS.md (content unchanged).
+- Baseline documents were not edited for the Windows SDK build-number deviation; it is recorded in ADR-0014 and DEPENDENCIES.md.
+
 ## V3.0 — Documentation baseline refresh — 2026-10-20
 
 ### Added

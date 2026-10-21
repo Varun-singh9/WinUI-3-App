@@ -52,7 +52,7 @@ Manifest and package metadata.
 - .NET 10 LTS / C# 14.
 - Windows App SDK 2.5.1 Stable.
 - Windows SDK 10.0.26100.x family; V3.0 records 10.0.26100.9457 as the current baseline build verified during this refresh.
-- Minimum supported OS: Windows 11 24H2 (build 26100) or later, pending the explicit Phase 0 owner gate already recorded in the decision history.
+- Minimum supported OS: Windows 11 24H2 (build 26100) or later, confirmed by the project owner on 2026-10-21 (ADR-0015).
 - SQLite for structured local data.
 - Named Pipes for initial general plugin IPC.
 - Out-of-process, capability-limited plugins.
@@ -96,7 +96,7 @@ Do not declare a feature complete because source code exists. Completion require
 
 Before production implementation:
 
-- confirm the Windows 11 24H2 minimum OS decision;
+- confirm the Windows 11 24H2 minimum OS decision (done 2026-10-21, ADR-0015);
 - verify the installed .NET SDK and pin it in `global.json`;
 - verify Windows App SDK 2.5.1 and pin the package/runtime;
 - verify the selected Windows SDK build;

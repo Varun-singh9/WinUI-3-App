@@ -92,19 +92,58 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Date: 2026-10-06
 - Approved by: Project owner
 
-## Rules
-- Architecture-boundary changes require an ADR.
-- New dependencies require impact notes and an entry in `DEPENDENCIES.md`.
-- Security/privacy changes require an explicit record.
-- New persistent data requires a schema/migration plan.
-- Changes to the technology baseline require an ADR before implementation.
-
-
 ## ADR-0012 — V3.0 Baseline Refresh and Archive Reorganization
-- Status: Prepared as part of the V3.0 documentation refresh; implementation remains gated by the existing Phase 0 owner confirmation.
+- Status: Prepared as part of the V3.0 documentation refresh; implementation was gated by the Phase 0 owner confirmation, which ADR-0015 later cleared.
 - Decision: Treat the reorganized V3.0 pack as the active documentation baseline. Refresh platform references to the current verified stable releases while keeping the approved architecture and product scope unchanged.
 - Verified platform references on 2026-10-20: .NET 10.0.402 SDK / 10.0.13 runtime, Windows App SDK 2.5.1 Stable, and Windows SDK 10.0.26100.9457 for the selected 26100 baseline family.
 - Context: The V2.8 pack was internally coherent but carried historical V2.x labels, mixed archive organization, and platform references that needed a current-date refresh.
 - Alternatives: Keep the V2.8 archive unchanged; create a cosmetic V3 copy without reorganizing active repository-facing files.
 - Consequences: V3.0 is the active handoff package. Exact machine-installed SDK/runtime/deployment values must still be verified and committed during Phase 0. No product feature or architecture boundary is expanded by this ADR.
 - Date: 2026-10-20
+
+## ADR-0013 — Coding-Agent Target Switched from ChatGPT to Claude
+- Status: Proposed — pending project-owner sign-off.
+- Decision: Claude, operating as the engineering assistant in the "CMDPAL V3" Claude Project, is the coding agent for all phases starting with Phase 0. This supersedes the coding-agent target set in ADR-0010; ADR-0010 is retained as history.
+- Context: The project owner is switching which AI tool implements each phase. This is a tooling change only: no architecture, phase scope, technology baseline, security model or Definition of Done content is altered. The Claude Project instructions carry the role, inspect-first, no-fake-completion and handoff rules.
+- Alternatives: Keep ChatGPT as the target; maintain parallel ChatGPT and Claude workflow documents; genericize every reference to "the coding agent".
+- Consequences:
+  - Documents that name ChatGPT (README.md, 04_Project_Overview §13, 09_CHATGPT_WORKFLOW.docx and its manifest entry, 16_Extension_Pack §1/§5/§9, and wording in the changelog) are now stale. They are not rewritten in Phase 0. A follow-up task renames or genericizes them under change control. Until then, "ChatGPT" in those documents is read as "the coding agent."
+  - Each chat starts by cloning the repository, reading `git log` and the Live_Repository state files, and comparing them with the documentation. If the clone fails, the owner supplies a zip.
+  - The coding agent's sandbox cannot restore or build WinUI. Build/test evidence for WinUI and the Windows-targeted projects must come from the owner's machine or CI, and must be recorded as such.
+- Date: 2026-10-21
+- Approved by: Pending project owner
+
+## ADR-0014 — Phase 0 Recorded Toolchain, Deployment and Platform Values
+- Status: Accepted for the owner-selected items below; the Windows SDK deviation is recorded and unresolved.
+- Decision: Record these Phase 0 values as the exact baseline for the first reproducible build.
+  - .NET SDK 10.0.402 pinned in `global.json` with `rollForward: latestPatch` and `allowPrerelease: false`. SDKs 10.0.401 and 9.0.318 are installed on the owner machine and are excluded by the pin.
+  - Target framework `net10.0-windows10.0.26100.0`; `SupportedOSPlatformVersion` 10.0.26100.0; C# 14.
+  - Architecture: x64 only for now; Arm64 is evaluated before release.
+  - Deployment: unpackaged, framework-dependent (Windows App SDK runtime is a prerequisite that the installer must detect or provide). The owner chose a "flexible deployment model"; this is the interpretation used. Confirm or correct it before installer work; changing it requires a new ADR.
+  - Windows App SDK 2.5.1 Stable (package id and version to be verified on the first Visual Studio restore). Package source: nuget.org only (`nuget.config`).
+  - IDE/build: Visual Studio Community 2026 18.11 stable (not prerelease) with the WinUI application development workload.
+  - Windows SDK: 10.0.28000 is installed but must not be used. CI image is selected in the CI step and recorded then.
+  - Build policy: `TreatWarningsAsErrors` is on. NU1900 (vulnerability feed unreachable) is exempt so offline builds do not fail; NU1901–NU1904 (actual vulnerabilities) remain errors.
+- Deviation: The documents list Windows SDK 10.0.26100.9457. The owner machine has 10.0.26100.8249. The baseline family (26100.x) is unchanged and the documents are not edited. Resolve by either installing 26100.9457 or amending the documented build number through a follow-up ADR. Note: the `net10.0-windows10.0.26100.0` target framework resolves its reference assemblies through the .NET SDK, so the installed Windows SDK build mainly affects the WinUI application and its tooling. Verify this on the first Visual Studio build.
+- Machine record: Windows 11 25H2 (26200.9457), x64, Git 2.55. The development machine is newer than the 24H2 floor, so it cannot by itself prove floor compatibility (see ADR-0015).
+- Context: Phase 0 must record exact toolchain and deployment values before scaffold freeze (Constitution V3.0 Pinning Rule; Implementation Specification §3 and V2.7 scaffold contract).
+- Alternatives: Packaged MSIX; packaged with external location; self-contained runtime; x64+Arm64 from the start; `rollForward: latestFeature`.
+- Consequences: Unpackaged apps have no package identity, so APIs that require identity need explicit workarounds or are unavailable. Framework-dependent delivery makes the Windows App SDK runtime an install-time dependency. Updating any recorded value is a Change Control event.
+- Date: 2026-10-21
+- Approved by: Project owner (deployment, architecture and rollForward choices, 2026-10-21); the Windows SDK deviation is recorded for follow-up
+
+## ADR-0015 — Windows 11 24H2 (Build 26100) Minimum OS Confirmed
+- Status: Accepted.
+- Decision: Windows 11 version 24H2 (build 26100) or later is the minimum supported OS. This clears the Phase 0 owner gate recorded in ADR-0011.
+- Context: The project owner confirmed the floor in the Phase 0 kickoff on 2026-10-21.
+- Alternatives: Windows 11 22H2 (build 22621), as before V2.7.
+- Consequences: Windows 11 22H2 and 23H2 machines are out of support. Any API newer than build 26100 still needs a runtime availability guard and a compatibility test. The development machine runs 25H2 (26200), so floor compatibility needs a 24H2 test machine or VM before release. Gate wording in PROJECT_STATE.md, PHASE_STATUS.md, NEXT_PHASE.md, ARCHITECTURE.md, DEPENDENCIES.md, README.md and PACK_MANIFEST.json is updated in the same change. RELEASE_NOTES and SOURCE_AUDIT are V3.0 release records and are left as written.
+- Date: 2026-10-21
+- Approved by: Project owner
+
+## Rules
+- Architecture-boundary changes require an ADR.
+- New dependencies require impact notes and an entry in `DEPENDENCIES.md`.
+- Security/privacy changes require an explicit record.
+- New persistent data requires a schema/migration plan.
+- Changes to the technology baseline require an ADR before implementation.

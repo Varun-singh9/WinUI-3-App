@@ -9,7 +9,7 @@ Create the actual production .NET solution and freeze the executable engineering
 - Read `00_Canonical/04_Project_Overview.docx`.
 - Read `02_Engineering/Implementation_Specification.docx`.
 - Read `03_Live_Repository/DECISIONS.md`.
-- Confirm the Windows 11 24H2 minimum-OS gate.
+- Windows 11 24H2 minimum-OS gate: CONFIRMED by the owner on 2026-10-21 (ADR-0015).
 - Verify the exact installed .NET SDK, Windows SDK, Windows App SDK package/runtime, target/minimum platform versions, deployment model, architecture and Visual Studio/MSBuild prerequisites.
 
 ## Tasks
@@ -22,6 +22,14 @@ Create the actual production .NET solution and freeze the executable engineering
 7. Establish structured diagnostics/logging.
 8. Establish initial test projects and CI build skeleton.
 9. Produce the first clean build and test run.
+
+## Task status (2026-10-21)
+1. Solution/project structure: created, minus `Launcher.App` and test projects. Unverified on the pinned toolchain.
+2. `global.json`, `Directory.Build.props`, `Directory.Packages.props`: created (plus `nuget.config`).
+3. Toolchain pin: values recorded in ADR-0014; machine verification pending.
+4. `DEPENDENCIES.md`: Phase 0 values and the SDK deviation recorded.
+5. Project references: set per §4.1 with the provisional choices in PHASE_STATUS.md.
+6–9. Not started.
 
 ## Do not change
 - Core ≠ Feature.

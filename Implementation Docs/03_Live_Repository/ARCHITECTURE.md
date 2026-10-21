@@ -49,7 +49,7 @@ Default deny. Core runs unelevated. Privileged operations use a narrowly allowli
 - .NET SDK 10.0.402 current release, exact installed SDK pinned in `global.json` during Phase 0
 - Windows App SDK 2.5.1 Stable
 - Windows SDK 10.0.26100.9457 baseline build
-- Minimum supported OS: Windows 11 24H2 (26100) or later, pending the explicit Phase 0 owner gate
+- Minimum supported OS: Windows 11 24H2 (26100) or later (confirmed by the owner 2026-10-21, ADR-0015)
 
 ## Runtime rule
 `global.json` selects the .NET SDK only. The repository separately pins Windows App SDK, Windows SDK, target/minimum platform versions and deployment model. APIs newer than the supported OS floor require runtime guards and compatibility tests.
