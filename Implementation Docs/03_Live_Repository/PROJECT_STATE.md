@@ -16,7 +16,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 ## Open items
 - ADR-0013 (coding agent: ChatGPT → Claude) awaits owner sign-off.
 - CI image not yet selected.
-- `Launcher.Core.Tests` (xUnit v3, ADR-0017) is written but has not been restored, built or run on the owner machine.
+- `Launcher.Core.Tests` (xUnit v3, ADR-0017) builds in Debug on the owner machine, but `dotnet test` failed (VSTest vs Microsoft Testing Platform on .NET 10). The fix is prepared and unverified.
 - Reference choices for Diagnostics, Security and Motion are provisional (see PHASE_STATUS.md).
 
 ## Verified baseline
@@ -32,7 +32,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 - Named Pipes initial plugin IPC
 
 ## Next action
-On the owner machine: restore, build and run `dotnet test` for the new `Launcher.Core.Tests` project and record the result. Then contracts, diagnostics and the CI skeleton (see PHASE_STATUS.md).
+Owner applies the ADR-0017 fix and runs `dotnet test`; record the result. Then contracts, diagnostics and the CI skeleton (see PHASE_STATUS.md).
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

@@ -63,11 +63,9 @@ The Windows App SDK component packages version independently of the 2.5.1 umbrel
 
 | Dependency | Version | License | Source | Why | Runtime/resource impact | Removal/replacement plan | ADR |
 |---|---|---|---|---|---|---|---|
-| xunit.v3 | 4.0.1 | Apache-2.0 (confirm at release review) | nuget.org | Test framework (ADR-0017) | Test-time only; not shipped; test projects become executables | Replace with another framework and rewrite test attributes/assertions | ADR-0017 |
-| Microsoft.NET.Test.Sdk | 18.10.0 | MIT | nuget.org | Connects test projects to the Visual Studio Test Platform and `dotnet test` | Test-time only; not shipped | Remove if the project later moves to Microsoft Testing Platform mode | ADR-0017 |
-| xunit.runner.visualstudio | 4.0.1 | Apache-2.0 (confirm at release review) | nuget.org | xUnit adapter for Visual Studio Test Explorer and `dotnet test` | Test-time only; not shipped | Remove together with xunit.v3 or on a move to Microsoft Testing Platform mode | ADR-0017 |
+| xunit.v3 | 4.0.1 | Apache-2.0 (confirm at release review) | nuget.org | Test framework, runs on Microsoft Testing Platform v2 (ADR-0017) | Test-time only; not shipped; test projects become executables; transitive MTP packages include telemetry components (ADR-0017 addendum) | Replace with another framework and rewrite test attributes/assertions | ADR-0017 |
 
-Transitive packages pulled in by the three test packages are recorded after the first restore on the owner machine (`dotnet list package --include-transitive`). Until then they are unrecorded.
+Transitive packages pulled in by `xunit.v3` are recorded after the first restore that matches the final package set (`dotnet list package --include-transitive`). The earlier list, taken while the VSTest-only packages were still referenced, is superseded and is not recorded here.
 
 ## Release dependency review
 Before release verify exact versions, license compatibility, notices, unexpected runtime/network/elevation behavior, package provenance, and final inventory.

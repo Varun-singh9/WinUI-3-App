@@ -25,7 +25,8 @@
 - Done (documents): ADR-0013 (proposed), ADR-0014, ADR-0015; state files and dependency register updated.
 - Done (scaffold, built on the pinned toolchain by the owner): `Launcher.sln`, `global.json`, `Directory.Build.props`, `Directory.Packages.props`, `nuget.config`, 14 `src/` library projects, empty `plugins/ installer/ scripts/ docs/ LICENSES/ tests/`.
 - Done (2026-10-21): `Launcher.App` created from the Visual Studio WinUI template and converted to unpackaged, framework-dependent, x64 (see ADR-0014 addendum). Debug and Release builds of the full solution including `Launcher.App` reported green by the owner. The owner started the app once with `dotnet run -c Debug`; an empty window opened with no error. This is a manual smoke check only, not an automated test.
-- Written, not yet run on the owner machine (2026-10-21): xUnit v3 test tooling (ADR-0017) and `tests/Launcher.Core.Tests` with six dependency-direction checks. The check logic was run in the agent sandbox against the real project files (all pass) and against deliberately broken copies (all violations detected), using a plain console harness. The xUnit packages could not be restored in the sandbox, so the test project itself is unbuilt.
+- Owner machine, 2026-10-21 (output pasted): `dotnet build -c Debug` of the whole solution succeeded, including `Launcher.App` and `Launcher.Core.Tests`. The first `dotnet test` FAILED before running any test: the .NET 10 SDK does not drive xunit.v3 4.x through VSTest. Fix prepared (ADR-0017 addendum): opt in to Microsoft Testing Platform in `global.json` and remove the VSTest-only packages. Not yet verified.
+- Written, not yet run (2026-10-21): `tests/Launcher.Core.Tests` with six dependency-direction checks. The check logic was run in the agent sandbox against the real project files (all pass) and against deliberately broken copies (all violations detected), using a plain console harness. The xUnit packages could not be restored in the sandbox, so the test project itself is unbuilt.
 - Deferred on purpose: the other six test projects from Implementation Specification §3 (created with their first real tests, so there are no placeholder tests).
 - Not done: contracts, diagnostics, CI skeleton, a CI-equivalent clean restore/build/test run, `Launcher.App` project references.
 
@@ -45,7 +46,7 @@
 See `DECISIONS.md` for ADR-0001 through ADR-0011 and subsequent records.
 
 ## Next action
-Owner: `dotnet restore`, `dotnet build` (Debug and Release) and `dotnet test` on the solution; paste the output. Then: Core/UI/Search/Plugin contracts with the `LauncherState` model, structured diagnostics, and the CI skeleton.
+Owner: apply the ADR-0017 fix, then `dotnet restore`, `dotnet build -c Debug` and `dotnet test -c Debug`; paste the output (and the package list). Then: Core/UI/Search/Plugin contracts with the `LauncherState` model, structured diagnostics, and the CI skeleton (including telemetry opt-out).
 
 ## Rollback point
 V3.0 pre-implementation documentation freeze.
