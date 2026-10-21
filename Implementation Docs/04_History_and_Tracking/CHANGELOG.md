@@ -6,6 +6,9 @@
 - ADR-0013 (coding agent ChatGPT → Claude, proposed), ADR-0014 (Phase 0 toolchain/deployment values and Windows SDK deviation), ADR-0015 (24H2 minimum OS confirmed).
 - Solution scaffold: `Launcher.sln`, `global.json`, `Directory.Build.props`, `Directory.Packages.props`, `nuget.config`, 14 `src/` library projects, root README.
 
+### Verified
+- Owner-machine restore, Debug and Release builds of all 14 scaffold projects succeeded on SDK 10.0.402 (TESTS.md build rows updated to PASS).
+
 ### Changed
 - State files, dependency register and gate wording updated for the cleared 24H2 gate. ADR-0012 moved above the Rules section in DECISIONS.md (content unchanged).
 - Baseline documents were not edited for the Windows SDK build-number deviation; it is recorded in ADR-0014 and DEPENDENCIES.md.
