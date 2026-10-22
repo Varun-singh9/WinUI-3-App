@@ -24,11 +24,19 @@ public sealed class ArchitectureTests
     }
 
     [Fact]
-    public void Core_references_no_other_launcher_project()
+    public void Core_references_only_the_plugin_contracts_project()
     {
         var graph = ProjectReferenceGraph.LoadFromRepository();
 
-        Assert.Empty(ArchitectureChecks.FindCoreReferences(graph));
+        Assert.Empty(ArchitectureChecks.FindUnexpectedCoreReferences(graph));
+    }
+
+    [Fact]
+    public void Security_and_plugin_contracts_are_leaf_projects()
+    {
+        var graph = ProjectReferenceGraph.LoadFromRepository();
+
+        Assert.Empty(ArchitectureChecks.FindLeafProjectReferences(graph));
     }
 
     [Fact]

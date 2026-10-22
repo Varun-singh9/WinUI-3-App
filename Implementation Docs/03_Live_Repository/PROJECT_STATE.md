@@ -4,11 +4,11 @@ Keep this file short. It is the live handoff state for implementation.
 
 ## Current state
 - Pack: V3.0 documentation baseline
-- Production source repository: solution scaffold on branch `phase-0-foundation` (14 library projects plus the `Launcher.App` WinUI project, no feature code)
+- Production source repository: solution on branch `phase-0-foundation` (14 library projects plus the `Launcher.App` WinUI project). Contract shapes exist in `Launcher.Core` and `Launcher.PluginContracts`; no feature code
 - Current phase: Phase 0 — Architecture & Project Contract
 - Phase status: IN PROGRESS (started 2026-10-21; branch `phase-0-foundation`)
 - Build status: restore, Debug and Release builds succeeded on the owner machine (SDK 10.0.402, `net10.0-windows10.0.26100.0`, 2026-10-21). The 14 library results were pasted; the later run including `Launcher.App` was reported green by the owner. `Launcher.App` starts and shows an empty window (manual check). No CI-equivalent build yet.
-- Test status: 6 architecture tests pass (Launcher.Core.Tests, owner machine, 2026-10-21); no feature tests yet because no feature code exists
+- Test status: 6 architecture tests passed on the owner machine (2026-10-21). 12 more tests (contract shapes and the updated rules) are written and not yet run there. No feature tests because no feature code exists
 
 ## Current gate
 None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project owner on 2026-10-21 (ADR-0015).
@@ -17,7 +17,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 - ADR-0013 (coding agent: ChatGPT → Claude) awaits owner sign-off.
 - CI image not yet selected.
 - `Launcher.Core.Tests` (xUnit v3, ADR-0017): 6 of 6 tests pass on the owner machine (Microsoft Testing Platform via `global.json`).
-- Reference choices for Diagnostics, Security and Motion are provisional (see PHASE_STATUS.md).
+- The `Launcher.Motion → Launcher.Core` reference is provisional (see PHASE_STATUS.md). Other reference choices are ratified by ADR-0018 and ADR-0019.
 
 ## Verified baseline
 - Native WinUI 3/XAML/Composition
@@ -32,7 +32,7 @@ None. The Windows 11 24H2 (build 26100) minimum OS was confirmed by the project 
 - Named Pipes initial plugin IPC
 
 ## Next action
-Plan and implement the Phase 0 contracts (LauncherState and the Core/Search/UI/Plugin interfaces), then structured diagnostics and the CI skeleton (see PHASE_STATUS.md).
+Owner applies the contracts patch and runs restore, build and test; record the result. Then diagnostics, CI skeleton, Release run and the Phase 0 exit review (see PHASE_STATUS.md).
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

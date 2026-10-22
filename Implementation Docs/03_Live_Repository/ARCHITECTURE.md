@@ -18,6 +18,8 @@ Pre-implementation freeze. This is the concise repository-facing architecture su
 
 ## Dependency direction
 - Core coordinates; it does not contain feature implementations.
+- Interfaces and data contracts live in Launcher.Core; plugin wire contracts live in Launcher.PluginContracts; implementations live in the feature projects (ADR-0018).
+- Core may reference only Launcher.PluginContracts. Launcher.Diagnostics references Core to implement its diagnostics contract. Launcher.Security and Launcher.PluginContracts are leaf projects (ADR-0019). The allowed references are enforced by tests.
 - Search owns parsing, routing, cancellation, aggregation and ranking.
 - Providers supply capability-specific results through contracts.
 - UI consumes semantic results/actions and does not contain provider-specific business logic.

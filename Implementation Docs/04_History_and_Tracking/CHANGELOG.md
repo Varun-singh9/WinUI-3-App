@@ -17,6 +17,10 @@
 - ADR-0016 (documented Windows SDK baseline build amended to 10.0.26100.8249) and ADR-0017 (xUnit.net v3 as the test framework).
 - `tests/Launcher.Core.Tests` with dependency-direction architecture checks; xUnit packages pinned in `Directory.Packages.props` and registered in DEPENDENCIES.md.
 
+### Added (contracts)
+- ADR-0018 (contract placement) and ADR-0019 (Core → PluginContracts, Diagnostics → Core).
+- Contract shapes in `Launcher.Core` (lifecycle, search, prefix, action, configuration, diagnostics, plugin and integration interfaces and types) and `Launcher.PluginContracts` (manifest and IPC messages). Contract-shape tests added to `Launcher.Core.Tests`.
+
 ### Verified (tests)
 - Owner machine: `dotnet test` on Microsoft Testing Platform ran 6 architecture tests, 6 passed (TESTS.md architecture row PASS).
 

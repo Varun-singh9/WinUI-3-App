@@ -4,4 +4,8 @@
     <RootNamespace>Launcher.Core</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.PluginContracts\Launcher.PluginContracts.csproj" />
+  </ItemGroup>
+
 </Project>

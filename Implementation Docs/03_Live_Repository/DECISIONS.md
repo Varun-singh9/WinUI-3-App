@@ -165,6 +165,30 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Date: 2026-10-21
 - Approved by: Project owner
 
+## ADR-0018 — Contract Placement: Interfaces in Launcher.Core, Implementations in Feature Projects
+- Status: Accepted.
+- Decision: Interfaces and data contracts for lifecycle, search, actions, configuration, diagnostics, plugin management and integrations live in `Launcher.Core`. The plugin wire contracts (`PluginManifest`, the IPC request/response and status) live in `Launcher.PluginContracts`. Implementations (prefix parser, routing, ranking, aggregation, providers, action implementations, configuration storage, the diagnostics sink) live in the feature projects and are introduced by the phase that owns them. Phase 0 defines shapes only: interfaces, records and enums, with no behavior.
+- Context: The UI, providers and actions may depend only on Core contracts (Implementation Specification section 4.1), and the Constitution forbids feature implementations in Core. Putting the contracts in Core lets every consumer reference one small project without referencing feature code.
+- Alternatives: Spread contracts across the feature projects (for example search types in `Launcher.Search`), which forces the UI and providers to reference feature projects; one separate contracts project for everything.
+- Consequences:
+  - First-cut member sets are the smallest shapes implied by the specification. The implementing phase may add members; each addition is recorded in PHASE_STATUS.md, and anything that changes a project boundary needs an ADR.
+  - Task-returning members use the `Async` suffix (`ExportAsync`, `ImportAsync`, `MigrateAsync`, `InitializeAsync`, `SearchAsync`, `ShutdownAsync`); the specification's shorthand `Export()`, `Import()` and `Migrate()` is read as these names.
+  - Provisional parts, to be confirmed by the phase that implements them: the `ResourceCost` scale and `ProviderLifecycleMode` values in `ProviderInfo`; the values of `IpcStatus`; the encoding of IPC payloads (text for now); the list element types of `PluginManifest.Providers`, `Commands` and `Settings` (identifiers for now); `ActionDescriptor.Target` and `Effect`; the streaming shape of `ISearchCoordinator.SearchAsync`.
+  - The `PrefixParser` implementation named in the specification is not part of Phase 0.
+  - Capability and permission-policy contracts for Security are not yet defined; they are added before the first provider or plugin needs them.
+  - `Launcher.Core.Tests` pins the contract names and states (contract-shape tests) so accidental change fails a test.
+- Date: 2026-10-21
+- Approved by: Project owner
+
+## ADR-0019 — Two New Project References: Core → PluginContracts and Diagnostics → Core
+- Status: Accepted.
+- Decision: `Launcher.Core` may reference `Launcher.PluginContracts` so that `IPluginManager` can use `PluginManifest`. `Launcher.Diagnostics` references `Launcher.Core` so that it can implement `IDiagnostics`. `Launcher.Security` and `Launcher.PluginContracts` remain leaf projects with no project references. Plugin capabilities are named by strings in the manifest and checked by Security; no Security type is shared with Core.
+- Context: ADR-0018 places `IPluginManager` in Core, and its manifest type belongs to the plugin wire contracts. The privileged broker must keep a deliberately small attack surface (Implementation Specification section 17), so Security must not gain dependencies.
+- Alternatives: Define a separate manifest summary type in Core (more types and a mapping); let Security reference PluginContracts (widens the broker's dependency surface); keep Diagnostics free of references and duplicate `LogEntry`.
+- Consequences: The allowed-reference table in `tests/Launcher.Core.Tests/DependencyRules.cs` is updated and enforced by tests: Core may reference only `Launcher.PluginContracts`; `Launcher.PluginHost` and `Launcher.PrivilegedBroker` may not reference Core. `Launcher.Motion → Launcher.Core` remains provisional until the Motion System is implemented.
+- Date: 2026-10-21
+- Approved by: Project owner
+
 ## Rules
 - Architecture-boundary changes require an ADR.
 - New dependencies require impact notes and an entry in `DEPENDENCIES.md`.

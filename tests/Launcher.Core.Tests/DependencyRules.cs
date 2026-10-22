@@ -8,19 +8,21 @@ namespace Launcher.Core.Tests;
 internal static class DependencyRules
 {
     public const string Core = "Launcher.Core";
+    public const string PluginContracts = "Launcher.PluginContracts";
+    public const string Security = "Launcher.Security";
     public const string App = "Launcher.App";
 
     /// <summary>
-    /// Allowed references per project. Entries marked provisional in PHASE_STATUS.md are ratified
-    /// in the Phase 0 contracts step.
+    /// Allowed references per project (ADR-0018 and ADR-0019). Core may reference only the leaf
+    /// PluginContracts project; Security and PluginContracts reference nothing.
     /// </summary>
     public static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> Allowed =
         new Dictionary<string, IReadOnlySet<string>>(StringComparer.Ordinal)
         {
-            [Core] = Set(),
-            ["Launcher.PluginContracts"] = Set(),
-            ["Launcher.Diagnostics"] = Set(),
-            ["Launcher.Security"] = Set(),
+            [Core] = Set(PluginContracts),
+            [PluginContracts] = Set(),
+            ["Launcher.Diagnostics"] = Set(Core),
+            [Security] = Set(),
             ["Launcher.Configuration"] = Set(Core),
             ["Launcher.Data"] = Set(Core),
             ["Launcher.Search"] = Set(Core),
@@ -29,8 +31,8 @@ internal static class DependencyRules
             ["Launcher.Integrations"] = Set(Core),
             ["Launcher.UI"] = Set(Core),
             ["Launcher.Motion"] = Set(Core),
-            ["Launcher.PluginHost"] = Set("Launcher.PluginContracts", "Launcher.Security"),
-            ["Launcher.PrivilegedBroker"] = Set("Launcher.Security"),
+            ["Launcher.PluginHost"] = Set(PluginContracts, Security),
+            ["Launcher.PrivilegedBroker"] = Set(Security),
 
             // Composition root. The plugin host and privileged broker run as separate processes and are
             // never referenced by the application project.

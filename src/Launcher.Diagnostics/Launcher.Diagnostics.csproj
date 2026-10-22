@@ -4,4 +4,8 @@
     <RootNamespace>Launcher.Diagnostics</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Core\Launcher.Core.csproj" />
+  </ItemGroup>
+
 </Project>

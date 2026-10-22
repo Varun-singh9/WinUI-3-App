@@ -36,12 +36,26 @@ internal static class ArchitectureChecks
         return violations;
     }
 
-    /// <summary>Core must not reference any other Launcher project: Core coordinates and holds no feature code.</summary>
-    public static IReadOnlyList<string> FindCoreReferences(ProjectReferenceGraph graph)
+    /// <summary>Core may reference only the leaf PluginContracts project: Core coordinates and holds no feature code (ADR-0019).</summary>
+    public static IReadOnlyList<string> FindUnexpectedCoreReferences(ProjectReferenceGraph graph)
     {
         return graph.References.TryGetValue(DependencyRules.Core, out var referenced)
-            ? referenced.Select(name => $"{DependencyRules.Core} -> {name}").OrderBy(text => text, StringComparer.Ordinal).ToList()
+            ? referenced
+                .Where(name => name != DependencyRules.PluginContracts)
+                .Select(name => $"{DependencyRules.Core} -> {name}")
+                .OrderBy(text => text, StringComparer.Ordinal)
+                .ToList()
             : [$"{DependencyRules.Core} was not found in the graph"];
+    }
+
+    /// <summary>Leaf projects (Security and PluginContracts) must not reference any other Launcher project.</summary>
+    public static IReadOnlyList<string> FindLeafProjectReferences(ProjectReferenceGraph graph)
+    {
+        return new[] { DependencyRules.Security, DependencyRules.PluginContracts }
+            .SelectMany(leaf => graph.References.TryGetValue(leaf, out var referenced)
+                ? referenced.Select(name => $"{leaf} -> {name}")
+                : [$"{leaf} was not found in the graph"])
+            .ToList();
     }
 
     /// <summary>Projects that reference the application project, which is only ever an entry point.</summary>
