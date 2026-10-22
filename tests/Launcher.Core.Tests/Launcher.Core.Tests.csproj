@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Launcher.Core\Launcher.Core.csproj" />
     <ProjectReference Include="..\..\src\Launcher.PluginContracts\Launcher.PluginContracts.csproj" />
+    <ProjectReference Include="..\..\src\Launcher.Diagnostics\Launcher.Diagnostics.csproj" />
   </ItemGroup>
 
 </Project>

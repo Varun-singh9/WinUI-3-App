@@ -17,11 +17,17 @@
 - ADR-0016 (documented Windows SDK baseline build amended to 10.0.26100.8249) and ADR-0017 (xUnit.net v3 as the test framework).
 - `tests/Launcher.Core.Tests` with dependency-direction architecture checks; xUnit packages pinned in `Directory.Packages.props` and registered in DEPENDENCIES.md.
 
+### Added (diagnostics and CI)
+- ADR-0020 (structured diagnostics implementation and log file schema) and ADR-0021 (CI skeleton on GitHub Actions).
+- `Launcher.Diagnostics`: `DiagnosticsService`, `IDiagnosticsSink`, `MemoryDiagnosticsSink`, `JsonLinesFileSink` and metadata redaction, with 5 tests.
+- `.github/workflows/ci.yml`: restore, build and test in Debug and Release on `windows-2025`, with telemetry opt-out and commit-pinned actions. Actions registered in DEPENDENCIES.md.
+
 ### Added (contracts)
 - ADR-0018 (contract placement) and ADR-0019 (Core → PluginContracts, Diagnostics → Core).
 - Contract shapes in `Launcher.Core` (lifecycle, search, prefix, action, configuration, diagnostics, plugin and integration interfaces and types) and `Launcher.PluginContracts` (manifest and IPC messages). Contract-shape tests added to `Launcher.Core.Tests`.
 
 ### Verified (tests)
+- Owner machine: after the contracts patch, `dotnet build -c Debug` of 16 projects succeeded and `dotnet test -c Debug` passed 18 of 18 tests (TESTS.md contract-shape row PASS).
 - Owner machine: `dotnet test` on Microsoft Testing Platform ran 6 architecture tests, 6 passed (TESTS.md architecture row PASS).
 
 ### Fixed

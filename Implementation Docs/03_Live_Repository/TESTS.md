@@ -8,8 +8,9 @@ Result values: `TODO`, `PASS`, `FAIL`, or `BLOCKED`. Compilation alone never mak
 | Build | Debug build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; Output pasted for 14 libraries, and again for the full solution including Launcher.App and Launcher.Core.Tests (2026-10-21) |
 | Build | Release build | PASS | Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 library projects (output pasted). Re-run with Launcher.App added: owner reported green (output not pasted) |
 | Build | CI-equivalent build | TODO | |
-| Architecture | Project references obey dependency direction | PASS | Owner machine, 2026-10-21: `dotnet test Launcher.sln -c Debug` ran Launcher.Core.Tests, 6 passed, 0 failed (output pasted). Covers the allowed-reference table, Core isolation, no references to the app, host/broker isolation and no cycles. The rules were updated by ADR-0019 after this run, so a re-run is pending |
-| Architecture | Contract shapes match specification | TODO | 11 checks written in Launcher.Core.Tests (2026-10-21); not yet run on the owner machine |
+| Architecture | Project references obey dependency direction | PASS | Owner machine, 2026-10-21: `dotnet test Launcher.sln -c Debug` ran Launcher.Core.Tests, 6 passed, 0 failed (output pasted). Covers the allowed-reference table, Core isolation, no references to the app, host/broker isolation and no cycles. Re-run after the ADR-0019 rule update (2026-10-21, output pasted): `dotnet test Launcher.sln -c Debug`, 18 tests in Launcher.Core.Tests passed, including 7 architecture checks |
+| Architecture | Contract shapes match specification | PASS | Owner machine, 2026-10-21 (output pasted): 11 contract-shape checks passed as part of 18 of 18 |
+| Diagnostics | Level filter, redaction, sink isolation, JSON-lines file, roll over | TODO | 5 tests written in Launcher.Core.Tests (2026-10-21); behavior verified in an agent-sandbox harness, not yet run on the owner machine |
 | Runtime | Single-instance behavior | TODO | |
 | Hotkey | Opens launcher | TODO | |
 | Activation | Cold loop starts immediately | TODO | |

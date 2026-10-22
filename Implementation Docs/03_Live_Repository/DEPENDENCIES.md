@@ -24,6 +24,7 @@ Pre-implementation baseline. No third-party production package has been approved
 | Minimum OS | Windows 11 24H2 / build 26100+ | Approved (owner, 2026-10-21, ADR-0015) |
 | Architecture | x64 only for now; Arm64 evaluation before release | Selected (ADR-0014) |
 | Deployment | Unpackaged, framework-dependent | Selected (ADR-0014); confirm interpretation before installer work |
+| CI image | GitHub-hosted `windows-2025` | Selected (ADR-0021); unproven until the first run |
 | SQLite | Exact library/package selected during implementation | Pending |
 
 ## Phase 0 recorded values and deviations (2026-10-21)
@@ -64,6 +65,8 @@ The Windows App SDK component packages version independently of the 2.5.1 umbrel
 | Dependency | Version | License | Source | Why | Runtime/resource impact | Removal/replacement plan | ADR |
 |---|---|---|---|---|---|---|---|
 | xunit.v3 | 4.0.1 | Apache-2.0 (confirm at release review) | nuget.org | Test framework, runs on Microsoft Testing Platform v2 (ADR-0017) | Test-time only; not shipped; test projects become executables; transitive MTP packages include telemetry components (ADR-0017 addendum) | Replace with another framework and rewrite test attributes/assertions | ADR-0017 |
+| actions/checkout | v7.0.1 (commit 3d3c42e5aac5ba805825da76410c181273ba90b1) | MIT (confirm at release review) | github.com/actions/checkout | Checks out the repository in CI | CI only; runs on the GitHub-hosted runner; not shipped | Replace with plain `git clone` commands | ADR-0021 |
+| actions/setup-dotnet | v6.0.0 (commit a98b56852c35b8e3190ac28c8c2271da59106c68) | MIT (confirm at release review) | github.com/actions/setup-dotnet | Installs the .NET SDK named in `global.json` in CI | CI only; runs on the GitHub-hosted runner; not shipped | Replace with the SDK already on the runner image or a script | ADR-0021 |
 
 Resolved transitive packages for `Launcher.Core.Tests` (owner machine, 2026-10-21, `dotnet list package --include-transitive`, final package set). All arrive through `xunit.v3` 4.0.1 and are test-time only:
 

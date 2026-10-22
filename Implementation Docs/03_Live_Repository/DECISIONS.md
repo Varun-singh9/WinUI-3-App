@@ -189,6 +189,26 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Date: 2026-10-21
 - Approved by: Project owner
 
+## ADR-0020 — Structured Diagnostics Implementation and Log File Schema
+- Status: Accepted.
+- Decision: `Launcher.Diagnostics` implements `IDiagnostics` with no new dependency. `DiagnosticsService` filters by minimum level, redacts sensitive metadata, fans entries out to `IDiagnosticsSink` implementations, and never throws into the caller (a failing sink does not stop the others). Two sinks exist: `MemoryDiagnosticsSink` (tests and a future in-app view) and `JsonLinesFileSink`, which uses `System.Text.Json` from the platform. Nothing is wired into `Launcher.App` yet; Phase 1 does that.
+- Persistent data and schema: the file sink writes one JSON object per line using the `LogEntry` fields (`Timestamp` in ISO 8601, `Level` as its name, `Component`, `EventId`, `CorrelationId`, `Duration` as a time span, `ErrorCode`, `Metadata`); null fields are omitted. Retention: when the file passes a size limit (5 MB by default) it is moved to `<path>.1`, replacing the previous rolled file, so at most two files exist. Migration plan: none is needed because logs are append-only, disposable and never read back by the product; a schema change may add fields but never changes existing ones. The file location belongs to the data layer and is not decided yet; the sink only receives a path.
+- Privacy: entries never carry raw search text or secrets. As a safety net, metadata values are replaced with `[redacted]` when the key equals `query`, `searchtext`, `rawinput`, `input` or `text` (case-insensitive) or contains `password`, `passwd`, `secret`, `token`, `apikey`, `api_key`, `credential` or `authorization`. This is a heuristic by key name, not a guarantee; callers must keep such data out of entries.
+- Context: Phase 0 must establish structured diagnostics (NEXT_PHASE.md task 7) and diagnostics must not become a hidden product dependency (ARCHITECTURE.md). New persistent data needs a schema and migration plan (DECISIONS.md rules), which this record provides.
+- Alternatives: Serilog or Microsoft.Extensions.Logging (new dependency); EventSource/ETW; plain-text logs.
+- Consequences: No new dependency. A different logging backend can replace the sinks behind `IDiagnostics` later. User-facing log viewing and export are not part of Phase 0.
+- Date: 2026-10-21
+- Approved by: Project owner
+
+## ADR-0021 — CI Skeleton on GitHub Actions
+- Status: Accepted. The workflow is unproven until its first run on GitHub.
+- Decision: `.github/workflows/ci.yml` runs on pushes to `main` and `phase-*` branches and on pull requests. One job, on the GitHub-hosted `windows-2025` image, runs for both Debug and Release: checkout, install the .NET SDK from `global.json`, `dotnet --info`, `dotnet restore`, `dotnet build --no-restore`, `dotnet test --no-build`. Permissions are `contents: read`; in-progress runs for the same ref are cancelled; the job times out after 30 minutes. Telemetry is opted out with `DOTNET_CLI_TELEMETRY_OPTOUT`, `DOTNET_NOLOGO` and `TESTINGPLATFORM_TELEMETRY_OPTOUT`. The two actions are pinned to full commit hashes: `actions/checkout` v7.0.1 and `actions/setup-dotnet` v6.0.0.
+- Context: Phase 0 requires a CI skeleton and a clean CI-equivalent restore, build and test run (NEXT_PHASE.md tasks 8 and 9; TESTS.md "CI-equivalent build").
+- Alternatives: the moving `windows-latest` label; no CI; Azure Pipelines.
+- Consequences: `windows-2025` is recorded as the CI image; changing it is change control. Both actions are CI-only third-party dependencies registered in DEPENDENCIES.md. The telemetry variable names come from documentation and should be confirmed in the first run's log. No secrets, signing or artifact publishing exist in this workflow. Updating an action pin is a dependency change.
+- Date: 2026-10-21
+- Approved by: Project owner
+
 ## Rules
 - Architecture-boundary changes require an ADR.
 - New dependencies require impact notes and an entry in `DEPENDENCIES.md`.

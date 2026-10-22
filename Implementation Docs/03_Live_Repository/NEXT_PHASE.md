@@ -29,9 +29,9 @@ Create the actual production .NET solution and freeze the executable engineering
 3. Toolchain pin: values recorded in ADR-0014; machine verification pending.
 4. `DEPENDENCIES.md`: Phase 0 values and the SDK deviation recorded.
 5. Project references: set per §4.1 with the provisional choices in PHASE_STATUS.md.
-6. Contracts: first-cut shapes written (ADR-0018, ADR-0019), not yet built on the owner machine.
-7. Structured diagnostics: contract (`LogEntry`, `IDiagnostics`) written; implementation not started.
-8. Test projects: xUnit v3 chosen (ADR-0017); `Launcher.Core.Tests` written, not yet run on the owner machine; CI skeleton not started.
+6. Contracts: first-cut shapes (ADR-0018, ADR-0019) built and checked on the owner machine (18 of 18 tests).
+7. Structured diagnostics: implemented in `Launcher.Diagnostics` (ADR-0020), 5 tests written, not yet run on the owner machine.
+8. Test projects: xUnit v3 (ADR-0017); `Launcher.Core.Tests` passes 18 of 18 on the owner machine; CI skeleton written (ADR-0021), not yet run on GitHub.
 9. Not started.
 
 ## Do not change
