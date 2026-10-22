@@ -210,7 +210,7 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Approved by: Project owner
 
 ## ADR-0022 — Phase 0 Exit and Carry-Over Items
-- Status: Proposed — takes effect when the project owner merges `phase-0-foundation` into `main` and tags `phase-0-complete`.
+- Status: Accepted — the project owner merged `phase-0-foundation` into `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22.
 - Decision: Phase 0 is complete against the V3.0 exit gate (solution restores, builds and tests with recorded exact toolchain and deployment values; project references comply with the approved direction; CI smoke evidence exists). The evidence is listed in PHASE_STATUS.md. The items below are carried forward on purpose and do not block the exit:
   1. Security capability and permission-policy contracts and the capability catalog. Phase 0 encodes permissions declaratively (manifest `Capabilities`, `ProviderInfo.Permissions`, `RiskLevel`, `ActionDescriptor`); the enforcement contract is added, with its own ADR, before the first provider or plugin consumes it. The specification places enforcement in the security-hardening phase.
   2. The other six test projects from Implementation Specification section 3, created with their first real tests.
@@ -223,7 +223,7 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Alternatives: Hold Phase 0 open until the security contracts and all test projects exist; close Phase 0 without recording the carry-over.
 - Consequences: Phase 1 starts from a green, CI-verified base. Each carried item has an owner phase and must be resolved there or re-deferred by a new ADR.
 - Date: 2026-10-22
-- Approved by: Pending project owner
+- Approved by: Project owner (by merging and tagging, 2026-10-22)
 
 ## Rules
 - Architecture-boundary changes require an ADR.

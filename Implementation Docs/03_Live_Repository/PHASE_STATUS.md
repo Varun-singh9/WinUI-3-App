@@ -1,7 +1,7 @@
 # Phase Status — V3.0
 
 - Current phase: Phase 0 — Architecture & Project Contract
-- Status: COMPLETE on branch `phase-0-foundation`; waiting for the owner to merge to `main` and tag `phase-0-complete` (ADR-0022)
+- Status: COMPLETE — merged to `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22 (ADR-0022)
 - Started: 2026-10-21
 - Completed: 2026-10-22
 - Objective: create the production solution, pin the toolchain, establish executable contracts, and produce the first clean build.
@@ -52,7 +52,7 @@
 See `DECISIONS.md` for ADR-0001 through ADR-0022.
 
 ## Next action
-Owner: apply the exit patch, push, confirm the CI run on the new commit is green, then merge `phase-0-foundation` into `main` and tag `phase-0-complete`. Then open a fresh chat for Phase 1 using NEXT_PHASE.md.
+Open a fresh chat for Phase 1 using NEXT_PHASE.md. Its first tasks are the carried-forward items that belong to Phase 1 (state-list decision, diagnostics wiring); ADR-0013 still needs the owner's sign-off.
 
 ## Rollback point
-`main` at commit 043d875 (V3.0 documentation freeze) until Phase 0 is merged; afterwards the `phase-0-complete` tag.
+Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
