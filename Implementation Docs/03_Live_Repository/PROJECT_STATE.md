@@ -13,7 +13,7 @@ Keep this file short. It is the live handoff state for implementation.
 None. Minimum OS confirmed (ADR-0015).
 
 ## Open items
-See "Carried forward" in PHASE_STATUS.md and ADR-0022. The most important: ADR-0013 awaits owner sign-off; Security capability contracts come before the first provider or plugin; the Phase 1 state list differs between the roadmap and the specification.
+See "Carried forward" in PHASE_STATUS.md and ADR-0022. The most important: ADR-0013 sign-off is deferred by the owner (either coding agent may continue); Security capability contracts come before the first provider or plugin; the Phase 1 state list differs between the roadmap and the specification.
 
 ## Verified baseline
 - Native WinUI 3/XAML/Composition, unpackaged and framework-dependent, x64

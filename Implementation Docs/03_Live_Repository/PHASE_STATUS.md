@@ -39,9 +39,9 @@
 2. The other six test projects, with their first real tests.
 3. Wire diagnostics into `Launcher.App`; decide the log file location.
 4. Resolve the roadmap/specification difference in the Phase 1 state list.
-5. Owner sign-off on ADR-0013; rename or genericize documents that still name ChatGPT.
-6. Confirm the deployment interpretation (ADR-0014); Arm64 evaluation and a Windows 11 24H2 test machine before release.
-7. Confirm the SDK version and telemetry opt-out in the CI run log.
+5. ADR-0013 (coding agent) stays Proposed: the owner is deferring the decision and may switch agents; rename or genericize documents that still name ChatGPT when it is decided.
+6. Confirm the deployment interpretation (ADR-0014); Arm64 evaluation and a Windows 11 24H2 test machine before release. Partial evidence: the CI runner is Windows 10.0.26100, so build and tests ran on the 24H2 build; the app itself has not been run there.
+7. CI log checked: SDK 10.0.402 confirmed and the .NET CLI telemetry opt-out is set. The effect of `TESTINGPLATFORM_TELEMETRY_OPTOUT` is not visible in `dotnet --info`; confirm from the test step output or accept as unverified.
 8. Provisional contract details listed in ADR-0018; `Launcher.Motion → Launcher.Core` reference; `PluginHost` and `PrivilegedBroker` remain class libraries until their phases.
 
 ## Known issues / gates
@@ -52,7 +52,7 @@
 See `DECISIONS.md` for ADR-0001 through ADR-0022.
 
 ## Next action
-Open a fresh chat for Phase 1 using NEXT_PHASE.md. Its first tasks are the carried-forward items that belong to Phase 1 (state-list decision, diagnostics wiring); ADR-0013 still needs the owner's sign-off.
+Open a fresh chat for Phase 1 using NEXT_PHASE.md. Its first tasks are the carried-forward items that belong to Phase 1 (state-list decision, diagnostics wiring); ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.

@@ -110,8 +110,9 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
   - Documents that name ChatGPT (README.md, 04_Project_Overview §13, 09_CHATGPT_WORKFLOW.docx and its manifest entry, 16_Extension_Pack §1/§5/§9, and wording in the changelog) are now stale. They are not rewritten in Phase 0. A follow-up task renames or genericizes them under change control. Until then, "ChatGPT" in those documents is read as "the coding agent."
   - Each chat starts by cloning the repository, reading `git log` and the Live_Repository state files, and comparing them with the documentation. If the clone fails, the owner supplies a zip.
   - The coding agent's sandbox cannot restore or build WinUI. Build/test evidence for WinUI and the Windows-targeted projects must come from the owner's machine or CI, and must be recorded as such.
+- Owner note (2026-10-22): the owner is deliberately not deciding this now and may switch back to ChatGPT for a period if the free Claude tier becomes too limiting. Until decided, the status stays Proposed and either coding agent may implement a phase. Because project state lives in the repository (state files, ADRs, tests, CI), not in any chat, a change of agent between phases needs no migration; the phase handoff rule in the README applies to both.
 - Date: 2026-10-21
-- Approved by: Pending project owner
+- Approved by: Pending project owner (decision deferred by the owner)
 
 ## ADR-0014 — Phase 0 Recorded Toolchain, Deployment and Platform Values
 - Status: Accepted for the owner-selected items below; the Windows SDK deviation is recorded and unresolved.
@@ -206,6 +207,7 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Context: Phase 0 requires a CI skeleton and a clean CI-equivalent restore, build and test run (NEXT_PHASE.md tasks 8 and 9; TESTS.md "CI-equivalent build").
 - Alternatives: the moving `windows-latest` label; no CI; Azure Pipelines.
 - Consequences: `windows-2025` is recorded as the CI image; changing it is change control. Both actions are CI-only third-party dependencies registered in DEPENDENCIES.md. The telemetry variable names come from documentation and should be confirmed in the first run's log. No secrets, signing or artifact publishing exist in this workflow. Updating an action pin is a dependency change.
+- Verification (2026-10-22, from the `dotnet --info` output of the first run, pasted by the owner): the runner installed SDK 10.0.402 and used `global.json` from the checkout; the runner OS is Windows 10.0.26100 (win-x64); `DOTNET_CLI_TELEMETRY_OPTOUT=1` and `DOTNET_NOLOGO=1` are set. `dotnet --info` does not list `TESTINGPLATFORM_TELEMETRY_OPTOUT`, so that variable's effect is not confirmed.
 - Date: 2026-10-21
 - Approved by: Project owner
 
