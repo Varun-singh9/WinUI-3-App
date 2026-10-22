@@ -209,6 +209,22 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Date: 2026-10-21
 - Approved by: Project owner
 
+## ADR-0022 — Phase 0 Exit and Carry-Over Items
+- Status: Proposed — takes effect when the project owner merges `phase-0-foundation` into `main` and tags `phase-0-complete`.
+- Decision: Phase 0 is complete against the V3.0 exit gate (solution restores, builds and tests with recorded exact toolchain and deployment values; project references comply with the approved direction; CI smoke evidence exists). The evidence is listed in PHASE_STATUS.md. The items below are carried forward on purpose and do not block the exit:
+  1. Security capability and permission-policy contracts and the capability catalog. Phase 0 encodes permissions declaratively (manifest `Capabilities`, `ProviderInfo.Permissions`, `RiskLevel`, `ActionDescriptor`); the enforcement contract is added, with its own ADR, before the first provider or plugin consumes it. The specification places enforcement in the security-hardening phase.
+  2. The other six test projects from Implementation Specification section 3, created with their first real tests.
+  3. Wiring diagnostics into `Launcher.App` and deciding the log file location (Phase 1 and the data layer).
+  4. Resolving the roadmap/specification difference in the Phase 1 UI state list (see NEXT_PHASE.md).
+  5. Owner sign-off on ADR-0013, and renaming or genericizing the documents that still name ChatGPT.
+  6. Confirming the deployment interpretation (ADR-0014) before installer work, evaluating Arm64 and testing on a Windows 11 24H2 machine before release.
+  7. Confirming the SDK version and telemetry opt-out in the first CI run log.
+- Context: The Phase 0 gate is evidence-based. Carrying the items forward explicitly keeps the exit honest instead of declaring everything done.
+- Alternatives: Hold Phase 0 open until the security contracts and all test projects exist; close Phase 0 without recording the carry-over.
+- Consequences: Phase 1 starts from a green, CI-verified base. Each carried item has an owner phase and must be resolved there or re-deferred by a new ADR.
+- Date: 2026-10-22
+- Approved by: Pending project owner
+
 ## Rules
 - Architecture-boundary changes require an ADR.
 - New dependencies require impact notes and an entry in `DEPENDENCIES.md`.

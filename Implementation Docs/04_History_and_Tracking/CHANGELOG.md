@@ -1,5 +1,9 @@
 # Changelog — Windows 11 Launcher Project Document Pack
 
+## Phase 0 — Complete — 2026-10-22
+
+Exit review recorded in PHASE_STATUS.md; ADR-0022 records the exit and the carried-forward items (proposed until the owner merges and tags). Owner machine: restore, Debug and Release builds of 16 projects, 23 of 23 tests. GitHub Actions run #1 (commit 36a445c): Debug and Release jobs green. TESTS.md Release build, CI-equivalent build and diagnostics rows now PASS. NEXT_PHASE.md rewritten as the Phase 1 handoff.
+
 ## Phase 0 — In progress — 2026-10-21
 
 ### Added
