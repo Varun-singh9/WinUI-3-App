@@ -1,5 +1,10 @@
 # Changelog — Windows 11 Launcher Project Document Pack
 
+## Phase 1 — Pre-start — 2026-10-22
+
+### Added
+- `AGENTS.md` at the repository root: agent-neutral session-start, branching, patch-delivery, build/test and standards rules, so any coding agent can continue from the repository alone.
+
 ## Phase 0 — Complete — 2026-10-22
 
 Exit review recorded in PHASE_STATUS.md; ADR-0022 records the exit and the carried-forward items (proposed until the owner merges and tags). Owner machine: restore, Debug and Release builds of 16 projects, 23 of 23 tests. GitHub Actions run #1 (commit 36a445c): Debug and Release jobs green. TESTS.md Release build, CI-equivalent build and diagnostics rows now PASS. NEXT_PHASE.md rewritten as the Phase 1 handoff. Merged to `main` (13482a5) and tagged `phase-0-complete` by the owner on 2026-10-22; ADR-0022 accepted. First CI log checked (SDK 10.0.402, runner Windows 10.0.26100); ADR-0013 left Proposed by the owner's choice.
