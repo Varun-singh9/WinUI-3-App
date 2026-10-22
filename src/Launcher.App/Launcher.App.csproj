@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher.App: WinUI 3 application entry point (Implementation Specification section 3).
+    Deployment model (ADR-0014): unpackaged, framework-dependent, x64 only.
+
+    TargetFramework (net10.0-windows10.0.26100.0), SupportedOSPlatformVersion, LangVersion, Nullable,
+    PlatformTarget and the warning policy are inherited from Directory.Build.props.
+    Package versions are inherited from Directory.Packages.props (central package management).
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Launcher.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- Windows 11 24H2 / build 26100 minimum OS (ADR-0015). The template default (17763) is wrong for this project. -->
+    <TargetPlatformMinVersion>10.0.26100.0</TargetPlatformMinVersion>
+
+    <!-- x64 only for now (ADR-0014). Arm64 is evaluated before release. -->
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
+    <UseWinUI>true</UseWinUI>
+    <WinUISDKReferences>false</WinUISDKReferences>
+
+    <!-- Unpackaged + framework-dependent: the Windows App SDK runtime must be installed on the machine. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+</Project>

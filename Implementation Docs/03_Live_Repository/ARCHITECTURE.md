@@ -18,6 +18,8 @@ Pre-implementation freeze. This is the concise repository-facing architecture su
 
 ## Dependency direction
 - Core coordinates; it does not contain feature implementations.
+- Interfaces and data contracts live in Launcher.Core; plugin wire contracts live in Launcher.PluginContracts; implementations live in the feature projects (ADR-0018).
+- Core may reference only Launcher.PluginContracts. Launcher.Diagnostics references Core to implement its diagnostics contract. Launcher.Security and Launcher.PluginContracts are leaf projects (ADR-0019). The allowed references are enforced by tests.
 - Search owns parsing, routing, cancellation, aggregation and ranking.
 - Providers supply capability-specific results through contracts.
 - UI consumes semantic results/actions and does not contain provider-specific business logic.
@@ -48,8 +50,8 @@ Default deny. Core runs unelevated. Privileged operations use a narrowly allowli
 - C# 14
 - .NET SDK 10.0.402 current release, exact installed SDK pinned in `global.json` during Phase 0
 - Windows App SDK 2.5.1 Stable
-- Windows SDK 10.0.26100.9457 baseline build
-- Minimum supported OS: Windows 11 24H2 (26100) or later, pending the explicit Phase 0 owner gate
+- Windows SDK 10.0.26100.8249 baseline build (amended from 9457, ADR-0016)
+- Minimum supported OS: Windows 11 24H2 (26100) or later (confirmed by the owner 2026-10-21, ADR-0015)
 
 ## Runtime rule
 `global.json` selects the .NET SDK only. The repository separately pins Windows App SDK, Windows SDK, target/minimum platform versions and deployment model. APIs newer than the supported OS floor require runtime guards and compatibility tests.

@@ -4,11 +4,13 @@ Result values: `TODO`, `PASS`, `FAIL`, or `BLOCKED`. Compilation alone never mak
 
 | Area | Test | Result | Notes |
 |---|---|---|---|
-| Build | Clean restore/build | TODO | |
-| Build | Debug build | TODO | |
-| Build | Release build | TODO | |
-| Build | CI-equivalent build | TODO | |
-| Architecture | Project references obey dependency direction | TODO | |
+| Build | Clean restore/build | PASS | Fresh scaffold checkout; Owner machine, 2026-10-21, SDK 10.0.402, net10.0-windows10.0.26100.0; 14 projects; output pasted by owner; no warnings shown |
+| Build | Debug build | PASS | Owner machine, SDK 10.0.402, net10.0-windows10.0.26100.0, output pasted: full solution (16 projects) built in Debug after the diagnostics patch; also built green in GitHub Actions (Debug job) |
+| Build | Release build | PASS | Owner machine, SDK 10.0.402, net10.0-windows10.0.26100.0, output pasted: full solution (16 projects including Launcher.App and Launcher.Core.Tests) built in Release after the diagnostics patch; also built green in GitHub Actions (Release job) |
+| Build | CI-equivalent build | PASS | GitHub Actions run #1 on commit 36a445c (branch phase-0-foundation): build-and-test (Debug) success in 2m 6s and build-and-test (Release) success in 1m 47s, total 2m 8s; evidence is the owner's screenshot of the run summary. SDK version and telemetry settings in the log not yet confirmed |
+| Architecture | Project references obey dependency direction | PASS | Owner machine, 2026-10-21: `dotnet test Launcher.sln -c Debug` ran Launcher.Core.Tests, 6 passed, 0 failed (output pasted). Covers the allowed-reference table, Core isolation, no references to the app, host/broker isolation and no cycles. Re-run after the ADR-0019 rule update (2026-10-21, output pasted): `dotnet test Launcher.sln -c Debug`, 18 tests in Launcher.Core.Tests passed, including 7 architecture checks |
+| Architecture | Contract shapes match specification | PASS | Owner machine, 2026-10-21 (output pasted): 11 contract-shape checks passed as part of 18 of 18 |
+| Diagnostics | Level filter, redaction, sink isolation, JSON-lines file, roll over | PASS | Owner machine, output pasted: 23 of 23 tests passed, including 5 diagnostics tests; also green in GitHub Actions |
 | Runtime | Single-instance behavior | TODO | |
 | Hotkey | Opens launcher | TODO | |
 | Activation | Cold loop starts immediately | TODO | |

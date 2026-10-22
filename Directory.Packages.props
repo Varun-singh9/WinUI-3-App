@@ -1,0 +1,33 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Windows App SDK 2.5.1 Stable (ADR-0008, ADR-0014). Consumed only by Launcher.App.
+    -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+
+    <!--
+      Windows SDK build tools, kept on the 10.0.26100.x baseline (ADR-0008, ADR-0014).
+      10.0.26100.8249 matches the Windows SDK build installed on the owner machine.
+      Do NOT move this to the 10.0.28000.x line: that SDK family is outside the approved baseline.
+      Visual Studio's "Add New Project" originally inserted 10.0.28000.2705 here; that was reverted.
+    -->
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.8249" />
+  </ItemGroup>
+
+  <!--
+    Test tooling (ADR-0017). Used only by projects under tests/; never shipped.
+    xunit.v3 4.0.2 (2026-10-09) exists; 4.0.1 (2026-09-12) is pinned because it is older and widely used.
+    Tests run on Microsoft Testing Platform (global.json "test" runner), so Microsoft.NET.Test.Sdk and
+    xunit.runner.visualstudio (VSTest-only) are deliberately not referenced.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="xunit.v3" Version="4.0.1" />
+  </ItemGroup>
+
+</Project>

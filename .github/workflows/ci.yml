@@ -1,0 +1,53 @@
+# Continuous integration skeleton (ADR-0021).
+# Restores, builds and tests the whole solution in Debug and Release on a pinned Windows image.
+# The .NET SDK comes from global.json, so CI and developer machines use the same SDK.
+name: CI
+
+on:
+  push:
+    branches: [main, 'phase-*']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Telemetry opt-out for the .NET CLI and the Microsoft Testing Platform (ADR-0017 addendum, ADR-0021).
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  TESTINGPLATFORM_TELEMETRY_OPTOUT: '1'
+
+jobs:
+  build-and-test:
+    name: build-and-test (${{ matrix.configuration }})
+    runs-on: windows-2025
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      # Actions are pinned to full commit hashes; the comment names the release (ADR-0021).
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install the .NET SDK pinned in global.json
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Show toolchain
+        run: dotnet --info
+
+      - name: Restore
+        run: dotnet restore Launcher.sln
+
+      - name: Build
+        run: dotnet build Launcher.sln -c ${{ matrix.configuration }} --no-restore
+
+      - name: Test
+        run: dotnet test Launcher.sln -c ${{ matrix.configuration }} --no-build

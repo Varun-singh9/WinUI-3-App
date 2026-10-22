@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- xUnit.net v3 test projects are executables (ADR-0017). -->
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Launcher.Core.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Launcher.Core\Launcher.Core.csproj" />
+    <ProjectReference Include="..\..\src\Launcher.PluginContracts\Launcher.PluginContracts.csproj" />
+    <ProjectReference Include="..\..\src\Launcher.Diagnostics\Launcher.Diagnostics.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,30 @@
+<Project>
+
+  <!--
+    Central build policy for every Launcher project (Implementation Specification section 26).
+    Phase 0 values are recorded in DECISIONS.md (ADR-0014). Changing any of them is a Change Control event.
+  -->
+  <PropertyGroup>
+    <!-- Windows 11 24H2 / build 26100 baseline (ADR-0008, ADR-0015). Windows SDK 10.0.28000 is deliberately not used. -->
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <!-- Compile-time access to newer APIs never proves runtime support; guard anything above this floor. -->
+    <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- x64 only for now; Arm64 is evaluated before release (ADR-0014). -->
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+      NU1900 only means the vulnerability feed was unreachable (offline machine), so it must not fail a build.
+      Real vulnerability findings (NU1901-NU1904) stay errors under TreatWarningsAsErrors.
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900</WarningsNotAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>
