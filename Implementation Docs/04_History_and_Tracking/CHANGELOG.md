@@ -3,6 +3,7 @@
 ## Phase 1 — Pre-start — 2026-10-22
 
 ### Added
+- AGENTS.md now says which branch to read (a plain clone checks out `main`; the phase branch is newer during a phase) and carries a phase-exit checklist.
 - `AGENTS.md` at the repository root: agent-neutral session-start, branching, patch-delivery, build/test and standards rules, so any coding agent can continue from the repository alone.
 
 ## Phase 0 — Complete — 2026-10-22

@@ -8,9 +8,10 @@ These rules apply to any AI coding agent or human contributor working in this re
 - Live state: `Implementation Docs/03_Live_Repository/` (`NEXT_PHASE.md`, `PHASE_STATUS.md`, `PROJECT_STATE.md`, `DECISIONS.md`, `DEPENDENCIES.md`, `TESTS.md`, `ARCHITECTURE.md`).
 
 ## Start of every session
-1. Clone or update the repository and read `git log --oneline -10`.
-2. Read `NEXT_PHASE.md`, `PHASE_STATUS.md`, `PROJECT_STATE.md` and `DECISIONS.md`, and compare them with the repository. Do not assume an earlier session finished anything that the repository does not show.
-3. Say what phase you are in and what you will do, and plan before writing code for anything non-trivial.
+1. Clone or update the repository. A plain clone downloads every branch but checks out only `main`, so check out the active phase branch yourself: list branches with `git branch -r --sort=-committerdate` and use the newest `phase-*` branch, or the one the owner names. If no phase is in progress, use `main`.
+2. Read `git log --oneline -10`, then `NEXT_PHASE.md`, `PHASE_STATUS.md`, `PROJECT_STATE.md` and `DECISIONS.md` on that branch, and compare them with the repository. Do not assume an earlier session finished anything that the repository does not show.
+3. During a phase the phase branch is newer than `main`: the state files on the branch win, and `main` catches up when the owner merges the phase.
+4. Say what phase you are in and what you will do, and plan before writing code for anything non-trivial.
 
 ## Working rules
 - One branch per phase (for example `phase-1-core-bar`). Do not commit to `main` until the phase exit review passes and the owner merges.
@@ -19,6 +20,13 @@ These rules apply to any AI coding agent or human contributor working in this re
 - Never invent architecture. If a task needs a decision that is not documented, stop and propose an ADR in `DECISIONS.md`.
 - Never report something as built, tested or verified unless it was. Record evidence only from real command output or CI, and say who ran it. Compilation alone does not make a test pass.
 - Keep code, tests and documents in sync in the same change. Update the state files at the end of substantial work.
+
+## Phase exit checklist
+Every phase ends the same way. Do these on the phase branch, then the owner merges.
+1. All phase tasks and tests are done, and restore, Debug and Release builds and tests pass on the owner machine and in CI. Record the evidence in `TESTS.md` and `PHASE_STATUS.md` (who ran it and what it showed).
+2. Update `PROJECT_STATE.md`, `PHASE_STATUS.md` (exit review against the phase's exit gate, plus a carried-forward list), `TESTS.md`, `CHANGELOG.md`, `DECISIONS.md` (new or changed ADRs), `DEPENDENCIES.md` (any package, SDK or CI action change) and `ARCHITECTURE.md` (if a boundary changed).
+3. Rewrite `NEXT_PHASE.md` as the handoff for the next phase: goal, preconditions, tasks, "do not build yet", completion evidence, and anything to resolve first.
+4. The owner merges the phase branch into `main` with `git merge --no-ff` and tags it `phase-N-complete`. Only then does `main` carry the new state.
 
 ## Build and test
 The .NET SDK is pinned in `global.json` (10.0.402). Tests run on Microsoft Testing Platform through `dotnet test`.
