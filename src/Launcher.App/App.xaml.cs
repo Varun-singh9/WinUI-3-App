@@ -7,8 +7,9 @@ namespace Launcher.App
     /// </summary>
     /// <remarks>
     /// Phase 0 placeholder: it only proves that the unpackaged WinUI project builds and starts.
-    /// Single-instance ownership, hotkey registration and the activation lifecycle belong to
-    /// Launcher.Core and are introduced in Phase 1, not here.
+    /// Single-instance ownership and hotkey registration are implemented in Launcher.Integrations behind
+    /// Launcher.Core interfaces, and the lifecycle in Launcher.Core. This class only wires them together
+    /// once they exist (ADR-0024).
     /// </remarks>
     public partial class App : Application
     {

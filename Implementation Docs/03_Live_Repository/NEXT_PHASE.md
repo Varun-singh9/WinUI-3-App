@@ -8,8 +8,8 @@ Make the launcher open: global hotkey, single instance, active-monitor placement
 - Read, in order: root `README.md`, the Constitution, the Project Overview, `Implementation_Specification.docx` (sections 4 to 9 and 14), `DECISIONS.md`, `PROJECT_STATE.md`, `PHASE_STATUS.md`, `DEPENDENCIES.md`, `TESTS.md`.
 - Clone the repository, read `git log`, and compare the live state files with the repository before starting.
 
-## Resolve first
-The roadmap lists the Phase 1 UI state machine as Hidden → Activating → Ready → Searching → ShowingResults → ShowingActions → Executing → Success/Error → Closing. Implementation Specification section 4.2 defines 11 states (Hidden, Activating, CriticalReady, Morphing, Ready, PrefixOpen, MenuOpen, Searching, Executing, Closing, ErrorRecovery) and `LauncherState` implements those. The specification outranks the roadmap in the source-of-truth hierarchy. Decide, with an ADR if the model changes, whether the roadmap list is a separate UI-level model or whether `LauncherState` needs the extra states. Contract-shape tests pin the current names, so a change must update them deliberately.
+## Resolved (ADR-0023, ADR-0024)
+The roadmap/specification state-list difference is resolved: `LauncherState` is unchanged and the roadmap list is a presentation vocabulary (ADR-0023). Task 1 (hotkey and single instance) is designed in ADR-0024: orchestration in Core, Win32 pieces in Launcher.Integrations, wired in Launcher.App. One open point remains for the Task 4 plan: what moves `Morphing` to `Ready` (see ADR-0023).
 
 ## Tasks (from the roadmap and specification)
 1. Global hotkey through a dedicated integration component; explicit, recoverable registration failure.

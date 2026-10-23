@@ -1,11 +1,34 @@
 # Phase Status — V3.0
 
-- Current phase: Phase 0 — Architecture & Project Contract
-- Status: COMPLETE — merged to `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22 (ADR-0022)
-- Started: 2026-10-21
-- Completed: 2026-10-22
-- Objective: create the production solution, pin the toolchain, establish executable contracts, and produce the first clean build.
-- Next phase: Phase 1 — Core + Exact Command Bar (not started; see NEXT_PHASE.md)
+- Current phase: Phase 1 — Core + Exact Command Bar
+- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. No Phase 1 code exists yet.
+- Objective: make the launcher open: global hotkey, single instance, active-monitor placement, the activation visual with the readiness coordinator, and the exact black rounded command bar with keyboard-first input and tray access (NEXT_PHASE.md).
+- Phase 0: COMPLETE — merged to `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22 (ADR-0022). Its exit review is kept below.
+
+## Phase 1 progress
+
+| Task (NEXT_PHASE.md) | State |
+|---|---|
+| 1. Global hotkey | Designed (ADR-0024). Patches 2 and 4 pending |
+| 2. Single-instance ownership | Designed (ADR-0024). Patches 2 and 3 pending |
+| 3. Active-monitor placement, bottom gap, DPI | Planned |
+| 4. Activation visual and readiness coordinator | Planned (open point: what moves Morphing to Ready, ADR-0023) |
+| 5. Command bar UI, tray access | Planned |
+| 6. Lifecycle implementation behind Core contracts | Planned (location decided in ADR-0024) |
+| 7. Diagnostics wiring and log location | Planned |
+| 8. Test projects with first real tests | Planned (`Launcher.Integration.Tests` in Task 1, Patch 3) |
+
+## Phase 1 decisions (2026-10-23)
+- ADR-0023: `LauncherState` stays as is; the roadmap state list is a presentation vocabulary (closes carried-forward item 4).
+- ADR-0024: orchestration in Core, Win32 hotkey and single-instance in Launcher.Integrations, wired in Launcher.App; two new Core interfaces `IHotkeyService` and `ISingleInstanceOwner`; per-user named mutex plus an `EventWaitHandle` signal; default hotkey Ctrl+Win+Alt+Space, injected; no new packages.
+
+## Task 1 patch plan (one patch each, applied by the owner, then restore/build/test output pasted)
+1. Documentation only: ADR-0023, ADR-0024, state files, stale comment fixes.
+2. The two new Core interfaces with result and event types, plus contract-shape tests (existing pinned tests unchanged).
+3. Single-instance implementation in Launcher.Integrations and the new `tests/Launcher.Integration.Tests` project with its first real tests.
+4. Hotkey service implementation and its tests.
+
+Contract additions made under ADR-0018's "record each addition" rule are listed here when they land (none yet).
 
 ## Exit review (V3.0 Phase 0 exit gate)
 
@@ -38,7 +61,7 @@
 1. Security capability and permission-policy contracts and capability catalog, before the first provider or plugin needs them.
 2. The other six test projects, with their first real tests.
 3. Wire diagnostics into `Launcher.App`; decide the log file location.
-4. Resolve the roadmap/specification difference in the Phase 1 state list.
+4. RESOLVED (ADR-0023, 2026-10-23): roadmap vs specification Phase 1 state list; `LauncherState` unchanged.
 5. ADR-0013 (coding agent) stays Proposed: the owner is deferring the decision and may switch agents; rename or genericize documents that still name ChatGPT when it is decided.
 6. Confirm the deployment interpretation (ADR-0014); Arm64 evaluation and a Windows 11 24H2 test machine before release. Partial evidence: the CI runner is Windows 10.0.26100, so build and tests ran on the 24H2 build; the app itself has not been run there.
 7. CI log checked: SDK 10.0.402 confirmed and the .NET CLI telemetry opt-out is set. The effect of `TESTINGPLATFORM_TELEMETRY_OPTOUT` is not visible in `dotnet --info`; confirm from the test step output or accept as unverified.
@@ -49,10 +72,10 @@
 - Visual Studio Test Explorer behavior with Microsoft Testing Platform has not been checked; the command line is the evidence path.
 
 ## Decisions
-See `DECISIONS.md` for ADR-0001 through ADR-0022.
+See `DECISIONS.md` for ADR-0001 through ADR-0024.
 
 ## Next action
-Open a fresh chat for Phase 1 using NEXT_PHASE.md. Its first tasks are the carried-forward items that belong to Phase 1 (state-list decision, diagnostics wiring); ADR-0013 stays Proposed by the owner's choice.
+Apply Patch 1 (documentation), then Patch 2 (the two new Core interfaces and their contract-shape tests). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.

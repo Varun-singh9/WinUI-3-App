@@ -7,7 +7,7 @@ namespace Launcher.App
     /// </summary>
     /// <remarks>
     /// Phase 0 only needs a window that opens, to prove the unpackaged WinUI build. The command bar,
-    /// activation visual and monitor placement are Phase 1 and Phase 2 work and must not be added here.
+    /// activation visual and monitor placement are Phase 1 work and are added in the Phase 1 tasks, not here.
     /// </remarks>
     public sealed partial class MainWindow : Window
     {

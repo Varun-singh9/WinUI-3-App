@@ -227,6 +227,38 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Date: 2026-10-22
 - Approved by: Project owner (by merging and tagging, 2026-10-22)
 
+## ADR-0023 — Phase 1 State Model: `LauncherState` Is the Only Lifecycle Model
+- Status: Accepted.
+- Decision: `LauncherState` (Implementation Specification section 4.2, 11 states) remains the only application lifecycle model and is not changed. The Phase 1 state list in the roadmap (Hidden → Activating → Ready → Searching → ShowingResults → ShowingActions → Executing → Success/Error → Closing) is a coarse presentation-level vocabulary written before the specification, not a second state machine. This resolves ADR-0022 carried-forward item 4.
+- Mapping from the roadmap list:
+  - Shared by name: Hidden, Activating, Ready, Searching, Executing, Closing.
+  - Specification-only: `CriticalReady` and `Morphing` (the cold-activation steps that drive the Motion System), `PrefixOpen` and `MenuOpen` (Phase 2 and Phase 5 popups), `ErrorRecovery`.
+  - `ShowingResults` and `ShowingActions` are not lifecycle modes. Results can show while a search is still streaming, and the action rail is a selection/focus state. They are view state in `Launcher.UI`, derived from data, and arrive with Phases 3 and 5. No presentation-level model type is created in Phase 1.
+  - `Error` maps to `ErrorRecovery`. `Success` has no `LauncherState` counterpart: it is transient feedback after `Executing`, followed by `Closing` or `Ready`.
+- Ownership: transitions belong to the lifecycle state machine in `Launcher.Core` behind `ILauncherLifecycle`, driven by `IApplicationRuntime` and `IActivationCoordinator` now and by the search coordinator, action executor, prefix registry and menu in later phases. `ILauncherLifecycle` is read-only for the UI and Motion System. The UI reports intents (key press, Escape, focus lost); Core decides the state. Phase 1 drives only Hidden, Activating, CriticalReady, Morphing, Ready, Closing and ErrorRecovery; PrefixOpen, MenuOpen, Searching and Executing have no transitions until their phases.
+- Context: The specification outranks the roadmap in the source-of-truth hierarchy (README), and the roadmap list appears nowhere else in the pack. Contract-shape tests pin the 11 names in order.
+- Alternatives: Add ShowingResults, ShowingActions and Success to `LauncherState` (mixes view state into the lifecycle, needs deliberate test changes); introduce a separate UI state type now (speculative before results and actions exist).
+- Consequences: No contract or test changes. `LauncherStatesMatchSpecification` stays as it is; transition tests for the state machine are new tests added in Phase 1. Open point for the Task 4 plan: what moves `Morphing` to `Ready` (the specification says the bar is usable before the morph completes and animation never blocks input). If that needs a Motion-to-Core completion signal and a new contract, it gets its own ADR.
+- Date: 2026-10-23
+- Approved by: Project owner
+
+## ADR-0024 — Phase 1 Task 1: Hotkey and Single-Instance Design, and Where Orchestration Lives
+- Status: Accepted. Design only; nothing in this record is implemented yet.
+- Decision:
+  1. Location of orchestration. The lifecycle state machine and the runtime coordinator (`IApplicationRuntime`, `ILauncherLifecycle`, `IActivationCoordinator` implementations) live in `Launcher.Core` and use only Core interfaces. The Win32 hotkey and single-instance code live in `Launcher.Integrations`. `Launcher.App` is the composition root that wires them together. This reconciles the Project Overview ("Core: lifecycle, global hotkey, ...") with Implementation Specification section 7 ("dedicated integration component"): Core owns the lifecycle and reacts to a hotkey event; the OS registration is an integration. It also clarifies ADR-0018: Core's own orchestration is allowed in Core (specification section 5); "implementations in feature projects" applies to feature behavior such as parsing, ranking, providers, actions and storage.
+  2. Two new Core interfaces, because the existing contracts have a gap: `IIntegrationManager.InitializeAsync` is documented as never blocking critical activation, but specification section 6 puts hotkey registration in the critical startup path, and Core has no contract for a hotkey press, a registration failure or a second-instance signal. The interfaces are `IHotkeyService` (register a gesture, report presses and a typed registration result) and `ISingleInstanceOwner` (try to acquire ownership, signal an existing owner, raise an event when another instance asks to activate). Their members and result types are fixed in Patch 2. Implementations live in `Launcher.Integrations`. A hotkey press reaches `IActivationCoordinator.ActivateAsync`.
+  3. Single-instance mechanism (the "chosen mechanism" of specification section 5): a per-user named mutex for ownership plus a named `EventWaitHandle` used only as a signal, with no payload and an ACL limited to the current user. The Windows App SDK `AppInstance` redirect is not used. A named pipe is considered only if passing arguments is ever needed, and would need its own record.
+  4. Default hotkey: Ctrl+Win+Alt+Space, a fixed default that is injected into the service and not hard-coded in it, chosen to avoid clashing with PowerToys Run and other launchers. It is not yet verified on the owner machine. Persisting the gesture through `IConfigurationService` is a later task, and `IConfigurationService` members stay as pinned.
+  5. No new packages. The `user32` P/Invoke (`RegisterHotKey`, `UnregisterHotKey`, a message-only window) is written by hand. Proposing a package such as CsWin32 requires an ADR first.
+  6. Failure behavior: registration failure returns a typed result and is logged through diagnostics with an error code. It never throws and never crashes the launcher; the launcher keeps running. Unregistering and releasing ownership happen in shutdown.
+- Security: hotkey via `RegisterHotKey` only (no keyboard hook, no input interception); the signal carries no data; mutex and event names are per-user and the event ACL admits only the current user; the command line is never executed or forwarded; diagnostics never log raw input. An elevated foreground window may not deliver the hotkey, which is a documented limit of an unelevated Core (ADR-0004).
+- Tests: names for the mutex and event are injectable and unique per test so tests never clash with a running launcher or each other. Real-hotkey tests use an unlikely gesture, always unregister it, and skip with an explicit reason when registration is not possible on the machine or in CI. A new project `tests/Launcher.Integration.Tests` (the name in specification section 3) is created in Patch 3 with its first real tests.
+- Context: Specification sections 5, 6, 7 and 14; ADR-0004, ADR-0018, ADR-0019, ADR-0020; the Phase 1 handoff in NEXT_PHASE.md.
+- Alternatives: Put the Win32 code in Core (breaks ADR-0019 and the Constitution's Core rule); use `IIntegrationManager` for the hotkey (its contract says it never blocks activation); Windows App SDK `AppInstance` (needs a custom Main and ties the app to that API); CsWin32 (new dependency).
+- Consequences: Two new Core interfaces are added in Patch 2 without changing the ten pinned interfaces or any pinned contract test. `CoreInterfacesExist` only checks the ten named interfaces, so the additions do not fail it. The reference table in `DependencyRules.cs` does not change. The new test project references `Launcher.Integrations` and `Launcher.Core`.
+- Date: 2026-10-23
+- Approved by: Project owner
+
 ## Rules
 - Architecture-boundary changes require an ADR.
 - New dependencies require impact notes and an entry in `DEPENDENCIES.md`.

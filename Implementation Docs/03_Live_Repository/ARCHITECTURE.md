@@ -32,6 +32,8 @@ Pre-implementation freeze. This is the concise repository-facing architecture su
 ## Core rule
 **Core must not contain feature implementations.**
 
+Clarification (ADR-0024): Core's own orchestration (the runtime coordinator, the lifecycle state machine and the activation coordinator) is allowed in Core per specification section 5. OS-facing pieces such as the global hotkey and single-instance ownership live in `Launcher.Integrations` behind Core interfaces and are wired in `Launcher.App`.
+
 ## Renderer
 Production V1: **WinUI 3 + XAML + Windows Composition**.
 
