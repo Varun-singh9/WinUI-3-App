@@ -10,13 +10,13 @@
 | Task (NEXT_PHASE.md) | State |
 |---|---|
 | 1. Global hotkey | Designed (ADR-0024). Contract added in Patch 2 (shape only; awaiting the owner's build/test run). Implementation is Patch 4 |
-| 2. Single-instance ownership | Designed (ADR-0024). Contract added in Patch 2 (shape only; awaiting the owner's build/test run). Implementation is Patch 3 |
+| 2. Single-instance ownership | Contract verified (Patch 2, 30 of 30 tests on the owner machine). Implementation and tests added in Patch 3 (awaiting the owner's build/test run); not wired into Launcher.App |
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned (open point: what moves Morphing to Ready, ADR-0023) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Planned (location decided in ADR-0024) |
 | 7. Diagnostics wiring and log location | Planned |
-| 8. Test projects with first real tests | Planned (`Launcher.Integration.Tests` in Task 1, Patch 3) |
+| 8. Test projects with first real tests | In progress: `Launcher.Integration.Tests` created in Patch 3 (awaiting the owner's build/test run) |
 
 ## Phase 1 decisions (2026-10-23)
 - ADR-0023: `LauncherState` stays as is; the roadmap state list is a presentation vocabulary (closes carried-forward item 4).
@@ -33,6 +33,13 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 
 ## Phase 1 evidence (from output pasted by the owner)
 - Patch 1 (docs and comment fixes) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 23 of 23 tests passed. Release build was not run for this patch.
+- Patch 2 (hotkey and single-instance contracts plus contract-shape tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 30 of 30 tests passed. Release build was not run for this patch.
+
+## Patch 3 implementation notes (not yet verified by the owner)
+- `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
+- Ownership is whoever creates the `Local\` named mutex first; the mutex is never waited on, so it has no thread affinity and the OS removes it when the process ends. The event is created before the mutex so a second instance can never signal into a gap. Both objects use an ACL admitting only the current user. Names are injected and must start with `Local\`.
+- Failures return `SingleInstanceResult` with a stable code and are logged: `single_instance.access_denied`, `single_instance.create_failed`, `single_instance.signal_failed`, `single_instance.handler_failed`. A handler that throws is logged by exception type only and cannot end the process.
+- New test project `tests/Launcher.Integration.Tests` (references Core, Integrations, Diagnostics). Expected after this patch: 48 tests (30 in Launcher.Core.Tests plus 18 here).
 
 ## Exit review (V3.0 Phase 0 exit gate)
 
