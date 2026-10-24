@@ -109,24 +109,24 @@ internal static class ContractChecks
             MethodNames(typeof(IConfigurationService)));
     }
 
-    private static IReadOnlyList<string> PropertyNames(Type type)
+    internal static IReadOnlyList<string> PropertyNames(Type type)
     {
         return type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(property => property.Name).ToList();
     }
 
-    private static IReadOnlyList<string> MethodNames(Type type)
+    internal static IReadOnlyList<string> MethodNames(Type type)
     {
         return type.GetMethods().Where(method => !method.IsSpecialName).Select(method => method.Name).Distinct(StringComparer.Ordinal).ToList();
     }
 
-    private static IReadOnlyList<string> SameOrdered(string subject, IReadOnlyList<string> expected, IReadOnlyList<string> actual)
+    internal static IReadOnlyList<string> SameOrdered(string subject, IReadOnlyList<string> expected, IReadOnlyList<string> actual)
     {
         return expected.SequenceEqual(actual, StringComparer.Ordinal)
             ? []
             : [$"{subject}: expected [{string.Join(", ", expected)}] in this order but found [{string.Join(", ", actual)}]"];
     }
 
-    private static IReadOnlyList<string> SameSet(string subject, IReadOnlyList<string> expected, IReadOnlyList<string> actual)
+    internal static IReadOnlyList<string> SameSet(string subject, IReadOnlyList<string> expected, IReadOnlyList<string> actual)
     {
         var missing = expected.Except(actual, StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToList();
         var unexpected = actual.Except(expected, StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToList();

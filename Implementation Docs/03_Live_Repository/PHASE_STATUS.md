@@ -9,8 +9,8 @@
 
 | Task (NEXT_PHASE.md) | State |
 |---|---|
-| 1. Global hotkey | Designed (ADR-0024). Patches 2 and 4 pending |
-| 2. Single-instance ownership | Designed (ADR-0024). Patches 2 and 3 pending |
+| 1. Global hotkey | Designed (ADR-0024). Contract added in Patch 2 (shape only; awaiting the owner's build/test run). Implementation is Patch 4 |
+| 2. Single-instance ownership | Designed (ADR-0024). Contract added in Patch 2 (shape only; awaiting the owner's build/test run). Implementation is Patch 3 |
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned (open point: what moves Morphing to Ready, ADR-0023) |
 | 5. Command bar UI, tray access | Planned |
@@ -28,7 +28,11 @@
 3. Single-instance implementation in Launcher.Integrations and the new `tests/Launcher.Integration.Tests` project with its first real tests.
 4. Hotkey service implementation and its tests.
 
-Contract additions made under ADR-0018's "record each addition" rule are listed here when they land (none yet).
+Contract additions made under ADR-0018's "record each addition" rule (all in `Launcher.Core`, namespace `Launcher.Core.Integrations`; shapes only, no behavior):
+- Patch 2: `IHotkeyService` (`RegisterAsync`, `UnregisterAsync`, `Current`, `Pressed`), `HotkeyGesture`, `HotkeyModifiers`, `HotkeyPressedEventArgs`, `HotkeyRegistrationResult`, `HotkeyRegistrationStatus`; `ISingleInstanceOwner` (`TryAcquire`, `TrySignalOwner`, `Release`, `IsOwner`, `ActivationRequested`), `SingleInstanceResult`, `SingleInstanceStatus`. The ten pinned Core interfaces and every existing contract-shape test are unchanged; the `ContractChecks` helper methods were made `internal` (visibility only) so the new checks reuse them.
+
+## Phase 1 evidence (from output pasted by the owner)
+- Patch 1 (docs and comment fixes) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 23 of 23 tests passed. Release build was not run for this patch.
 
 ## Exit review (V3.0 Phase 0 exit gate)
 
