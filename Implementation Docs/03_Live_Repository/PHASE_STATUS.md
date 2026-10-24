@@ -1,7 +1,7 @@
 # Phase Status — V3.0
 
 - Current phase: Phase 1 — Core + Exact Command Bar
-- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. No Phase 1 code exists yet.
+- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. Task 1 library code (single instance, hotkey) is implemented and verified on the owner machine; nothing is wired into `Launcher.App` yet.
 - Objective: make the launcher open: global hotkey, single instance, active-monitor placement, the activation visual with the readiness coordinator, and the exact black rounded command bar with keyboard-first input and tray access (NEXT_PHASE.md).
 - Phase 0: COMPLETE — merged to `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22 (ADR-0022). Its exit review is kept below.
 
@@ -9,14 +9,14 @@
 
 | Task (NEXT_PHASE.md) | State |
 |---|---|
-| 1. Global hotkey | Contract verified (Patch 2). Implementation and tests added in Patch 4 (awaiting the owner's build/test run); not wired into Launcher.App |
+| 1. Global hotkey | Implemented and verified on the owner machine (Patch 4, 73 of 73 tests, 0 skipped, so the two real-hotkey tests ran); not wired into Launcher.App; Ctrl+Win+Alt+Space not yet tried on this machine |
 | 2. Single-instance ownership | Implemented and verified on the owner machine (Patch 3, 48 of 48 tests passed); not wired into Launcher.App |
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned (open point: what moves Morphing to Ready, ADR-0023) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Planned (location decided in ADR-0024) |
 | 7. Diagnostics wiring and log location | Planned |
-| 8. Test projects with first real tests | `Launcher.Integration.Tests` verified in Patch 3 (48 of 48); extended in Patch 4 (awaiting the owner's run) |
+| 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 ## Phase 1 decisions (2026-10-23)
 - ADR-0023: `LauncherState` stays as is; the roadmap state list is a presentation vocabulary (closes carried-forward item 4).
@@ -35,6 +35,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Patch 1 (docs and comment fixes) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 23 of 23 tests passed. Release build was not run for this patch.
 - Patch 2 (hotkey and single-instance contracts plus contract-shape tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 30 of 30 tests passed. Release build was not run for this patch.
 - Patch 3 (single-instance implementation and the new `Launcher.Integration.Tests` project) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 48 of 48 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- Patch 4 (hotkey service and tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 73 of 73 tests, 0 failed, 0 skipped, so the two `RealHotkeyTests` ran against the real Windows hotkey API. Release build was not run for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -86,16 +87,16 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 ## Decisions
 See `DECISIONS.md` for ADR-0001 through ADR-0024.
 
-## Patch 4 implementation notes (not yet verified by the owner)
+## Patch 4 implementation notes (verified by the owner's run, see evidence above)
 - `HotkeyService`, `HotkeyDefaults`, an internal `IHotkeyNative` seam with the real `Win32HotkeyNative`, and hand-written user32/kernel32 declarations in `Launcher.Integrations/Hotkey`. No new packages, no keyboard hook, no input interception.
 - One background message-loop thread (started on the first registration) owns the registration. `RegisterHotKey` is called with no window handle and `MOD_NOREPEAT`. A new gesture is registered before the old one is released, so a failed replacement keeps the old hotkey. A press queued for an old registration is ignored. A throwing `Pressed` handler is logged by exception type only and cannot end the loop or the process.
 - Typed results and codes: `hotkey.in_use` (Win32 1409), `hotkey.invalid_gesture` (87 or a rejected gesture: no modifier, no key, a modifier key as the main key, key outside 1-254), `hotkey.register_failed`, `hotkey.disposed`, `hotkey.loop_failed`, `hotkey.handler_failed`. Failures are logged with the Win32 error number.
 - Default gesture Ctrl+Win+Alt+Space lives in `HotkeyDefaults.LauncherGesture` and is passed in by the caller. It is not verified on the owner machine until the hotkey is wired in.
 - Deviation recorded in ADR-0024: thread-queue registration instead of a message-only window.
-- Tests: 25 new in `Launcher.Integration.Tests` (23 in `HotkeyServiceTests` with a fake system layer and the real message loop, 2 in `RealHotkeyTests` that use Ctrl+Alt+Shift+F24, always release it, and skip with a reason if a real hotkey cannot be registered). Presses are simulated by posting `WM_HOTKEY`, so real key delivery is not proven until a manual check after wiring. Expected total after this patch: 73 tests (30 + 43), with the 2 real tests possibly skipped.
+- Tests: 25 new in `Launcher.Integration.Tests` (23 in `HotkeyServiceTests` with a fake system layer and the real message loop, 2 in `RealHotkeyTests` that use Ctrl+Alt+Shift+F24, always release it, and skip with a reason if a real hotkey cannot be registered). Presses are simulated by posting `WM_HOTKEY`, so real key delivery is not proven until a manual check after wiring. Expected total after this patch: 73 tests (30 + 43), with the 2 real tests possibly skipped. Result: 73 passed, 0 skipped. Still unverified: Ctrl+Win+Alt+Space on the owner machine, and a real key press reaching the app (both need the wiring into Launcher.App).
 
 ## Next action
-Apply Patch 4 and paste the restore, build and test output. After a green run, review the remaining Phase 1 tasks in the table above and plan the next one (nothing is wired into Launcher.App yet). ADR-0013 stays Proposed by the owner's choice.
+Choose and plan the next Phase 1 task from the table above; no code before the plan is approved. The hotkey and single-instance code is not wired into Launcher.App yet. ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
