@@ -9,14 +9,14 @@
 
 | Task (NEXT_PHASE.md) | State |
 |---|---|
-| 1. Global hotkey | Designed (ADR-0024). Contract added in Patch 2 (shape only; awaiting the owner's build/test run). Implementation is Patch 4 |
-| 2. Single-instance ownership | Contract verified (Patch 2, 30 of 30 tests on the owner machine). Implementation and tests added in Patch 3 (awaiting the owner's build/test run); not wired into Launcher.App |
+| 1. Global hotkey | Contract verified (Patch 2). Implementation and tests added in Patch 4 (awaiting the owner's build/test run); not wired into Launcher.App |
+| 2. Single-instance ownership | Implemented and verified on the owner machine (Patch 3, 48 of 48 tests passed); not wired into Launcher.App |
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned (open point: what moves Morphing to Ready, ADR-0023) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Planned (location decided in ADR-0024) |
 | 7. Diagnostics wiring and log location | Planned |
-| 8. Test projects with first real tests | In progress: `Launcher.Integration.Tests` created in Patch 3 (awaiting the owner's build/test run) |
+| 8. Test projects with first real tests | `Launcher.Integration.Tests` verified in Patch 3 (48 of 48); extended in Patch 4 (awaiting the owner's run) |
 
 ## Phase 1 decisions (2026-10-23)
 - ADR-0023: `LauncherState` stays as is; the roadmap state list is a presentation vocabulary (closes carried-forward item 4).
@@ -34,8 +34,9 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 ## Phase 1 evidence (from output pasted by the owner)
 - Patch 1 (docs and comment fixes) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 23 of 23 tests passed. Release build was not run for this patch.
 - Patch 2 (hotkey and single-instance contracts plus contract-shape tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 30 of 30 tests passed. Release build was not run for this patch.
+- Patch 3 (single-instance implementation and the new `Launcher.Integration.Tests` project) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 48 of 48 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 
-## Patch 3 implementation notes (not yet verified by the owner)
+## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
 - Ownership is whoever creates the `Local\` named mutex first; the mutex is never waited on, so it has no thread affinity and the OS removes it when the process ends. The event is created before the mutex so a second instance can never signal into a gap. Both objects use an ACL admitting only the current user. Names are injected and must start with `Local\`.
 - Failures return `SingleInstanceResult` with a stable code and are logged: `single_instance.access_denied`, `single_instance.create_failed`, `single_instance.signal_failed`, `single_instance.handler_failed`. A handler that throws is logged by exception type only and cannot end the process.
@@ -85,8 +86,16 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 ## Decisions
 See `DECISIONS.md` for ADR-0001 through ADR-0024.
 
+## Patch 4 implementation notes (not yet verified by the owner)
+- `HotkeyService`, `HotkeyDefaults`, an internal `IHotkeyNative` seam with the real `Win32HotkeyNative`, and hand-written user32/kernel32 declarations in `Launcher.Integrations/Hotkey`. No new packages, no keyboard hook, no input interception.
+- One background message-loop thread (started on the first registration) owns the registration. `RegisterHotKey` is called with no window handle and `MOD_NOREPEAT`. A new gesture is registered before the old one is released, so a failed replacement keeps the old hotkey. A press queued for an old registration is ignored. A throwing `Pressed` handler is logged by exception type only and cannot end the loop or the process.
+- Typed results and codes: `hotkey.in_use` (Win32 1409), `hotkey.invalid_gesture` (87 or a rejected gesture: no modifier, no key, a modifier key as the main key, key outside 1-254), `hotkey.register_failed`, `hotkey.disposed`, `hotkey.loop_failed`, `hotkey.handler_failed`. Failures are logged with the Win32 error number.
+- Default gesture Ctrl+Win+Alt+Space lives in `HotkeyDefaults.LauncherGesture` and is passed in by the caller. It is not verified on the owner machine until the hotkey is wired in.
+- Deviation recorded in ADR-0024: thread-queue registration instead of a message-only window.
+- Tests: 25 new in `Launcher.Integration.Tests` (23 in `HotkeyServiceTests` with a fake system layer and the real message loop, 2 in `RealHotkeyTests` that use Ctrl+Alt+Shift+F24, always release it, and skip with a reason if a real hotkey cannot be registered). Presses are simulated by posting `WM_HOTKEY`, so real key delivery is not proven until a manual check after wiring. Expected total after this patch: 73 tests (30 + 43), with the 2 real tests possibly skipped.
+
 ## Next action
-Apply Patch 1 (documentation), then Patch 2 (the two new Core interfaces and their contract-shape tests). ADR-0013 stays Proposed by the owner's choice.
+Apply Patch 4 and paste the restore, build and test output. After a green run, review the remaining Phase 1 tasks in the table above and plan the next one (nothing is wired into Launcher.App yet). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.

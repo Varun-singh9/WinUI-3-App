@@ -6,5 +6,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Launcher.Core\Launcher.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Lets the tests replace the system layer (IHotkeyNative) and post synthetic presses. Tests only. -->
+    <InternalsVisibleTo Include="Launcher.Integration.Tests" />
+  </ItemGroup>
 
 </Project>

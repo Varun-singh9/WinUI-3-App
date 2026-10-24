@@ -256,6 +256,7 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Context: Specification sections 5, 6, 7 and 14; ADR-0004, ADR-0018, ADR-0019, ADR-0020; the Phase 1 handoff in NEXT_PHASE.md.
 - Alternatives: Put the Win32 code in Core (breaks ADR-0019 and the Constitution's Core rule); use `IIntegrationManager` for the hotkey (its contract says it never blocks activation); Windows App SDK `AppInstance` (needs a custom Main and ties the app to that API); CsWin32 (new dependency).
 - Consequences: Two new Core interfaces are added in Patch 2 without changing the ten pinned interfaces or any pinned contract test. `CoreInterfacesExist` only checks the ten named interfaces, so the additions do not fail it. The reference table in `DependencyRules.cs` does not change. The new test project references `Launcher.Integrations` and `Launcher.Core`.
+- Implementation note (Patch 4, 2026-10-23): the hotkey is registered on one dedicated background message-loop thread with `RegisterHotKey` and no window handle, so Windows posts `WM_HOTKEY` to that thread's queue, instead of through a message-only window as item 5 sketched. It is the same user32 API with no window class or window procedure, and registration, release and presses all happen on the owning thread. The user32 calls sit behind an internal seam (`IHotkeyNative`) so tests can run without a desktop, and `Launcher.Integrations` exposes its internals to `Launcher.Integration.Tests` for that. No contract, boundary or dependency change.
 - Date: 2026-10-23
 - Approved by: Project owner
 
