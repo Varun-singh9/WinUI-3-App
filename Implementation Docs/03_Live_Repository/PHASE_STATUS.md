@@ -14,7 +14,7 @@
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design recorded in ADR-0026; Patch 1 of 6 (docs only) in progress |
+| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patch 1 (docs) applied and pushed; Patch 2 (contracts and shape tests) added, awaiting the owner's build/test run |
 | 7. Diagnostics wiring and log location | Planned |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
@@ -41,12 +41,14 @@ Nothing is wired into `Launcher.App` in Task 6; wiring and the first manual chec
 
 Contract additions made under ADR-0018's "record each addition" rule (all in `Launcher.Core`, namespace `Launcher.Core.Integrations`; shapes only, no behavior):
 - Patch 2: `IHotkeyService` (`RegisterAsync`, `UnregisterAsync`, `Current`, `Pressed`), `HotkeyGesture`, `HotkeyModifiers`, `HotkeyPressedEventArgs`, `HotkeyRegistrationResult`, `HotkeyRegistrationStatus`; `ISingleInstanceOwner` (`TryAcquire`, `TrySignalOwner`, `Release`, `IsOwner`, `ActivationRequested`), `SingleInstanceResult`, `SingleInstanceStatus`. The ten pinned Core interfaces and every existing contract-shape test are unchanged; the `ContractChecks` helper methods were made `internal` (visibility only) so the new checks reuse them.
+- Task 6 Patch 2 (ADR-0026, all in `Launcher.Core`, namespace `Launcher.Core.Lifecycle`; shapes only): new `IReadinessCoordinator` (`IsCriticalReady`, `ReportReady`, `ReportFailed`, `WaitForCriticalAsync`), `ReadinessStatus` (Ready, Failed, TimedOut, Cancelled), `ReadinessResult`, `ApplicationRuntimeOptions` (with the owner-approved 5 s `DefaultCriticalReadinessTimeout`), `ApplicationStartStatus` (Started, AnotherInstanceRunning) and `ApplicationStartResult`. Changed: `IApplicationRuntime.StartAsync` now returns `Task<ApplicationStartResult>` (a change beyond ADR-0018's additions, recorded in ADR-0026 item 6; nothing used the old shape). The existing pinned contract-shape tests are unchanged.
 
 ## Phase 1 evidence (from output pasted by the owner)
 - Patch 1 (docs and comment fixes) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 23 of 23 tests passed. Release build was not run for this patch.
 - Patch 2 (hotkey and single-instance contracts plus contract-shape tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 30 of 30 tests passed. Release build was not run for this patch.
 - Patch 3 (single-instance implementation and the new `Launcher.Integration.Tests` project) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 48 of 48 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Patch 4 (hotkey service and tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 73 of 73 tests, 0 failed, 0 skipped, so the two `RealHotkeyTests` ran against the real Windows hotkey API. Release build was not run for this patch.
+- Task 6 Patch 1 (ADR-0025 and ADR-0026, docs only) applied by the owner and pushed. Verified by the coding agent against the remote on 2026-10-25: origin/phase-1-core-bar holds all six Phase 1 commits with content identical to the agent's tree, `main` is unchanged at f7d4175, and tag `phase-0-complete` exists. CI: GitHub Actions run on push d098816 (branch phase-1-core-bar, created 2026-10-25T04:34Z) concluded success according to the GitHub API, fetched by the coding agent; ci.yml runs restore, build and test in Debug and Release, so that covers both configurations; per-test counts are not visible in the API response. The earlier run on a2ec042 (2026-10-24) also concluded success.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -107,7 +109,7 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Tests: 25 new in `Launcher.Integration.Tests` (23 in `HotkeyServiceTests` with a fake system layer and the real message loop, 2 in `RealHotkeyTests` that use Ctrl+Alt+Shift+F24, always release it, and skip with a reason if a real hotkey cannot be registered). Presses are simulated by posting `WM_HOTKEY`, so real key delivery is not proven until a manual check after wiring. Expected total after this patch: 73 tests (30 + 43), with the 2 real tests possibly skipped. Result: 73 passed, 0 skipped. Still unverified: Ctrl+Win+Alt+Space on the owner machine, and a real key press reaching the app (both need the wiring into Launcher.App).
 
 ## Next action
-Apply Task 6 Patch 1 (documentation), then Patch 2 (contracts and shape tests). No code changes in Patch 1. ADR-0013 stays Proposed by the owner's choice.
+Apply Task 6 Patch 2 (contracts and shape tests), run restore, build and test, and paste the output. Then Patch 3 (the `LauncherLifecycle` state machine). The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
