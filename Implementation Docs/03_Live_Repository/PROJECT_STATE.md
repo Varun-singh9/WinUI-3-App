@@ -25,7 +25,7 @@ See "Carried forward" in PHASE_STATUS.md and ADR-0022. The most important: ADR-0
 - xUnit.net v3 on Microsoft Testing Platform; CI on GitHub Actions `windows-2025`
 
 ## Next action
-Choose and plan the next Phase 1 task (see PHASE_STATUS.md). The hotkey and single-instance code is not yet wired into `Launcher.App`, so nothing can be tried by hand yet.
+Task 6 (lifecycle) is next by owner decision (ADR-0025); its design is in ADR-0026. Apply the Task 6 patches in order (PHASE_STATUS.md). Nothing is wired into `Launcher.App` until Task 7, so nothing can be tried by hand yet.
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

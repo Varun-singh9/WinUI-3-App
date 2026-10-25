@@ -9,13 +9,13 @@ Make the launcher open: global hotkey, single instance, active-monitor placement
 - Clone the repository, read `git log`, and compare the live state files with the repository before starting.
 
 ## Resolved (ADR-0023, ADR-0024)
-The roadmap/specification state-list difference is resolved: `LauncherState` is unchanged and the roadmap list is a presentation vocabulary (ADR-0023). Task 1 (hotkey and single instance) is designed in ADR-0024: orchestration in Core, Win32 pieces in Launcher.Integrations, wired in Launcher.App. One open point remains for the Task 4 plan: what moves `Morphing` to `Ready` (see ADR-0023).
+The roadmap/specification state-list difference is resolved: `LauncherState` is unchanged and the roadmap list is a presentation vocabulary (ADR-0023). Task 1 (hotkey and single instance) is designed in ADR-0024: orchestration in Core, Win32 pieces in Launcher.Integrations, wired in Launcher.App. The owner chose to implement Task 6 next (ADR-0025) and the lifecycle design is recorded in ADR-0026. The `Morphing` to `Ready` rule is provisional in ADR-0026 and Task 4 revisits it. The order of the remaining tasks is decided at the Task 6 exit review.
 
 ## Tasks (from the roadmap and specification)
 1. Global hotkey through a dedicated integration component; explicit, recoverable registration failure.
 2. Single-instance ownership.
 3. Active-monitor placement, fixed bottom display gap, DPI awareness.
-4. Activation visual layer and readiness coordinator: cold activation loops while critical startup runs, then morphs into the bar; warm activation reuses existing state. Optional providers never block activation.
+4. Activation visual layer and readiness coordinator: cold activation loops while critical startup runs, then morphs into the bar; warm activation reuses existing state. Optional providers never block activation. (The readiness coordinator is implemented in Task 6, ADR-0026.)
 5. Command bar UI: exact black rounded bar, keyboard-first input, focus returned to the input, tray access.
 6. Implement the lifecycle (`IApplicationRuntime`, `ILauncherLifecycle`, `IActivationCoordinator`) behind the Phase 0 contracts; semantic states drive the UI, and business code never starts animations directly.
 7. Wire diagnostics into the app and decide the log file location through the data layer; distinguish cold and warm activation in diagnostics.

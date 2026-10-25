@@ -12,15 +12,26 @@
 | 1. Global hotkey | Implemented and verified on the owner machine (Patch 4, 73 of 73 tests, 0 skipped, so the two real-hotkey tests ran); not wired into Launcher.App; Ctrl+Win+Alt+Space not yet tried on this machine |
 | 2. Single-instance ownership | Implemented and verified on the owner machine (Patch 3, 48 of 48 tests passed); not wired into Launcher.App |
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
-| 4. Activation visual and readiness coordinator | Planned (open point: what moves Morphing to Ready, ADR-0023) |
+| 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | Planned (location decided in ADR-0024) |
+| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design recorded in ADR-0026; Patch 1 of 6 (docs only) in progress |
 | 7. Diagnostics wiring and log location | Planned |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 ## Phase 1 decisions (2026-10-23)
 - ADR-0023: `LauncherState` stays as is; the roadmap state list is a presentation vocabulary (closes carried-forward item 4).
 - ADR-0024: orchestration in Core, Win32 hotkey and single-instance in Launcher.Integrations, wired in Launcher.App; two new Core interfaces `IHotkeyService` and `ISingleInstanceOwner`; per-user named mutex plus an `EventWaitHandle` signal; default hotkey Ctrl+Win+Alt+Space, injected; no new packages.
+- ADR-0025: the owner chose to implement Task 6 (lifecycle) next, ahead of Tasks 3 to 5 and 7. `NEXT_PHASE.md`, specification section 31 and the roadmap disagree about order, so the deviation and the agent's Task 3 recommendation are recorded. The remaining order is decided at the Task 6 exit review.
+- ADR-0026: lifecycle design: Core components, a Phase 1 transition table, cold/warm definition, `IReadinessCoordinator`, `StartAsync` returning `ApplicationStartResult`, provisional presentation timing, failure policy.
+
+## Task 6 patch plan (one patch each; the owner applies it and pastes restore, build and test output before the next)
+1. Documentation only: ADR-0025, ADR-0026, state files.
+2. New contracts and types (`IReadinessCoordinator`, `ApplicationRuntimeOptions`, `ApplicationStartResult` and its status types, the changed `StartAsync` signature) with contract-shape tests; existing pinned tests unchanged.
+3. `LauncherLifecycle` state machine with transition-table, ordering, concurrency and handler-isolation tests.
+4. `ReadinessCoordinator` with success, failure, timeout, cancellation and optional-never-gates tests.
+5. `ActivationCoordinator` with cold and warm sequence, deactivate, double activate and timeout-to-ErrorRecovery tests.
+6. `ApplicationRuntime` (start order, other instance, hotkey failure, shutdown, restart, optional integration not blocking) with tests, then the exit evidence for Task 6.
+Nothing is wired into `Launcher.App` in Task 6; wiring and the first manual check come with Task 7.
 
 ## Task 1 patch plan (one patch each, applied by the owner, then restore/build/test output pasted)
 1. Documentation only: ADR-0023, ADR-0024, state files, stale comment fixes.
@@ -96,7 +107,7 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Tests: 25 new in `Launcher.Integration.Tests` (23 in `HotkeyServiceTests` with a fake system layer and the real message loop, 2 in `RealHotkeyTests` that use Ctrl+Alt+Shift+F24, always release it, and skip with a reason if a real hotkey cannot be registered). Presses are simulated by posting `WM_HOTKEY`, so real key delivery is not proven until a manual check after wiring. Expected total after this patch: 73 tests (30 + 43), with the 2 real tests possibly skipped. Result: 73 passed, 0 skipped. Still unverified: Ctrl+Win+Alt+Space on the owner machine, and a real key press reaching the app (both need the wiring into Launcher.App).
 
 ## Next action
-Choose and plan the next Phase 1 task from the table above; no code before the plan is approved. The hotkey and single-instance code is not wired into Launcher.App yet. ADR-0013 stays Proposed by the owner's choice.
+Apply Task 6 Patch 1 (documentation), then Patch 2 (contracts and shape tests). No code changes in Patch 1. ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
