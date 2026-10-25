@@ -14,7 +14,7 @@
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patch 1 (docs) applied and pushed; Patch 2 (contracts and shape tests) added, awaiting the owner's build/test run |
+| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patch 1 (docs) and Patch 2 (contracts, 80 of 80 tests) verified; Patch 3 (`LauncherLifecycle` state machine) added, awaiting the owner's build/test run |
 | 7. Diagnostics wiring and log location | Planned |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
@@ -49,6 +49,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Patch 3 (single-instance implementation and the new `Launcher.Integration.Tests` project) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 48 of 48 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Patch 4 (hotkey service and tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 73 of 73 tests, 0 failed, 0 skipped, so the two `RealHotkeyTests` ran against the real Windows hotkey API. Release build was not run for this patch.
 - Task 6 Patch 1 (ADR-0025 and ADR-0026, docs only) applied by the owner and pushed. Verified by the coding agent against the remote on 2026-10-25: origin/phase-1-core-bar holds all six Phase 1 commits with content identical to the agent's tree, `main` is unchanged at f7d4175, and tag `phase-0-complete` exists. CI: GitHub Actions run on push d098816 (branch phase-1-core-bar, created 2026-10-25T04:34Z) concluded success according to the GitHub API, fetched by the coding agent; ci.yml runs restore, build and test in Debug and Release, so that covers both configurations; per-test counts are not visible in the API response. The earlier run on a2ec042 (2026-10-24) also concluded success.
+- Task 6 Patch 2 (lifecycle contracts and shape tests) applied on the owner machine on 2026-10-25: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 80 of 80 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -108,8 +109,15 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Deviation recorded in ADR-0024: thread-queue registration instead of a message-only window.
 - Tests: 25 new in `Launcher.Integration.Tests` (23 in `HotkeyServiceTests` with a fake system layer and the real message loop, 2 in `RealHotkeyTests` that use Ctrl+Alt+Shift+F24, always release it, and skip with a reason if a real hotkey cannot be registered). Presses are simulated by posting `WM_HOTKEY`, so real key delivery is not proven until a manual check after wiring. Expected total after this patch: 73 tests (30 + 43), with the 2 real tests possibly skipped. Result: 73 passed, 0 skipped. Still unverified: Ctrl+Win+Alt+Space on the owner machine, and a real key press reaching the app (both need the wiring into Launcher.App).
 
+## Task 6 Patch 3 implementation notes (not yet verified by the owner)
+- `LauncherLifecycle` (public sealed, in `Launcher.Core/Lifecycle`) implements `ILauncherLifecycle`. It starts Hidden. Its transition method is internal and `Launcher.Core` exposes internals to `Launcher.Core.Tests` only, so the UI can observe the state but never set it.
+- `LifecycleTransitions` holds the 15 legal Phase 1 transitions from ADR-0026. Anything else, including entering the current state again, is rejected with a Warning log (`lifecycle.transition_rejected`, with from, to and reason) and no state change. It never throws; a blank reason is a programming error and does throw.
+- Events are raised in commit order, outside the lock. A transition made inside a handler, or while another thread is delivering, is queued and delivered in order by the thread already delivering, so an event can arrive on a different thread from its cause, and `State` can be ahead of the event being delivered; handlers should read the event's `Current`. A handler that throws is logged by exception type only (`lifecycle.handler_failed`) and the other handlers still run.
+- Every accepted transition is logged as `lifecycle.state_changed` with from, to and a short non-sensitive reason. A small internal `LifecycleLog` helper will be reused by the coordinators in the next patches.
+- Tests: 11 new in `LauncherLifecycleTests` (`Launcher.Core.Tests`), including an exhaustive check of all state pairs against the table and an 8-thread concurrency test. Expected total after this patch: 91 tests (80 + 11).
+
 ## Next action
-Apply Task 6 Patch 2 (contracts and shape tests), run restore, build and test, and paste the output. Then Patch 3 (the `LauncherLifecycle` state machine). The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
+Apply Task 6 Patch 3 (the `LauncherLifecycle` state machine), run restore, build and test, and paste the output. Then Patch 4 (`ReadinessCoordinator`). The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.

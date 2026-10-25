@@ -7,5 +7,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Launcher.PluginContracts\Launcher.PluginContracts.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Lets the tests drive the internal transition method of LauncherLifecycle. Tests only. -->
+    <InternalsVisibleTo Include="Launcher.Core.Tests" />
+  </ItemGroup>
 
 </Project>
