@@ -14,7 +14,7 @@
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patch 1 (docs) and Patch 2 (contracts, 80 of 80 tests) verified; Patch 3 (`LauncherLifecycle` state machine) added, awaiting the owner's build/test run |
+| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patches 1 to 3 verified (91 of 91 tests); Patch 4 (`ReadinessCoordinator`) added, awaiting the owner's build/test run |
 | 7. Diagnostics wiring and log location | Planned |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
@@ -50,6 +50,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Patch 4 (hotkey service and tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 73 of 73 tests, 0 failed, 0 skipped, so the two `RealHotkeyTests` ran against the real Windows hotkey API. Release build was not run for this patch.
 - Task 6 Patch 1 (ADR-0025 and ADR-0026, docs only) applied by the owner and pushed. Verified by the coding agent against the remote on 2026-10-25: origin/phase-1-core-bar holds all six Phase 1 commits with content identical to the agent's tree, `main` is unchanged at f7d4175, and tag `phase-0-complete` exists. CI: GitHub Actions run on push d098816 (branch phase-1-core-bar, created 2026-10-25T04:34Z) concluded success according to the GitHub API, fetched by the coding agent; ci.yml runs restore, build and test in Debug and Release, so that covers both configurations; per-test counts are not visible in the API response. The earlier run on a2ec042 (2026-10-24) also concluded success.
 - Task 6 Patch 2 (lifecycle contracts and shape tests) applied on the owner machine on 2026-10-25: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 80 of 80 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- Task 6 Patch 3 (`LauncherLifecycle` state machine) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 91 of 91 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -116,8 +117,15 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Every accepted transition is logged as `lifecycle.state_changed` with from, to and a short non-sensitive reason. A small internal `LifecycleLog` helper will be reused by the coordinators in the next patches.
 - Tests: 11 new in `LauncherLifecycleTests` (`Launcher.Core.Tests`), including an exhaustive check of all state pairs against the table and an 8-thread concurrency test. Expected total after this patch: 91 tests (80 + 11).
 
+## Task 6 Patch 4 implementation notes (not yet verified by the owner)
+- `ReadinessCoordinator` (public sealed, `Launcher.Core/Lifecycle`) implements `IReadinessCoordinator`. The composition root names the critical capabilities, a positive timeout and the diagnostics when it creates it. An empty critical set is ready immediately; blank or duplicate critical names and a non-positive timeout are programming errors that throw from the constructor.
+- A capability whose name is not in the critical set is optional: reports about it are logged (`readiness.capability_ready` / `readiness.capability_failed`, with the capability name and whether it is critical) but never change a wait, so an optional provider can neither block nor fail activation.
+- A wait ends with the first of: all critical capabilities ready (Ready), a critical failure (Failed, with the capability and the reported code), the timeout (TimedOut, with the first still-pending critical capability and no error code, logged as `readiness.timed_out`), or cancellation (Cancelled). None of these throws. The timeout is measured from the start of each wait. A wait that is already satisfiable returns immediately, including a failure reported earlier. A failed capability that later reports ready clears its failure.
+- Every wait that had to wait is logged as `readiness.wait_completed` with its status, duration and, for a failure or timeout, a Warning and the error code. Reports are logged outside the lock, so a slow diagnostics sink cannot stall readiness reports. `readiness.critical_ready` is logged once when critical readiness becomes complete.
+- Tests: 16 new in `ReadinessCoordinatorTests` (`Launcher.Core.Tests`), including concurrent reports from 40 threads, several simultaneous waiters, timeout and cancellation. Expected total after this patch: 107 tests (91 + 16). Two of the new tests wait about 100 ms for a real timeout.
+
 ## Next action
-Apply Task 6 Patch 3 (the `LauncherLifecycle` state machine), run restore, build and test, and paste the output. Then Patch 4 (`ReadinessCoordinator`). The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
+Apply Task 6 Patch 4 (the `ReadinessCoordinator`), run restore, build and test, and paste the output. Then Patch 5 (`ActivationCoordinator`). The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
