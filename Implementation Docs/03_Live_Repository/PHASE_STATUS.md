@@ -14,7 +14,7 @@
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patches 1 to 3 verified (91 of 91 tests); Patch 4 (`ReadinessCoordinator`) added, awaiting the owner's build/test run |
+| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patches 1 to 4 verified (107 of 107 tests); Patch 5 (`ActivationCoordinator`) added, awaiting the owner's build/test run |
 | 7. Diagnostics wiring and log location | Planned |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
@@ -51,6 +51,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Task 6 Patch 1 (ADR-0025 and ADR-0026, docs only) applied by the owner and pushed. Verified by the coding agent against the remote on 2026-10-25: origin/phase-1-core-bar holds all six Phase 1 commits with content identical to the agent's tree, `main` is unchanged at f7d4175, and tag `phase-0-complete` exists. CI: GitHub Actions run on push d098816 (branch phase-1-core-bar, created 2026-10-25T04:34Z) concluded success according to the GitHub API, fetched by the coding agent; ci.yml runs restore, build and test in Debug and Release, so that covers both configurations; per-test counts are not visible in the API response. The earlier run on a2ec042 (2026-10-24) also concluded success.
 - Task 6 Patch 2 (lifecycle contracts and shape tests) applied on the owner machine on 2026-10-25: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 80 of 80 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 3 (`LauncherLifecycle` state machine) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 91 of 91 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- Task 6 Patch 4 (`ReadinessCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 107 of 107 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -124,8 +125,16 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Every wait that had to wait is logged as `readiness.wait_completed` with its status, duration and, for a failure or timeout, a Warning and the error code. Reports are logged outside the lock, so a slow diagnostics sink cannot stall readiness reports. `readiness.critical_ready` is logged once when critical readiness becomes complete.
 - Tests: 16 new in `ReadinessCoordinatorTests` (`Launcher.Core.Tests`), including concurrent reports from 40 threads, several simultaneous waiters, timeout and cancellation. Expected total after this patch: 107 tests (91 + 16). Two of the new tests wait about 100 ms for a real timeout.
 
+## Task 6 Patch 5 implementation notes (not yet verified by the owner)
+- `ActivationCoordinator` (public sealed, `Launcher.Core/Lifecycle`) implements `IActivationCoordinator` on top of `LauncherLifecycle` and `IReadinessCoordinator`. It never touches UI, animation or providers.
+- Cold is the first activation of the process, or any activation while critical readiness is not complete (`ActivationKind.Cold`). Cold path: Hidden, Activating, wait for critical readiness, CriticalReady, Morphing, Ready. Warm path (a later activation with critical readiness complete): Hidden to Ready. A request while the launcher is visible or in a transition changes nothing and is logged as `activation.ignored`; a concurrent request that loses the race to enter Activating is also ignored.
+- Provisional presentation timing (ADR-0026 item 7): after critical readiness, Morphing and Ready follow at once, and Closing is followed by Hidden at once. Core does not wait for animation. Task 4 revisits this with its own ADR.
+- A critical readiness failure or timeout enters ErrorRecovery, is logged as `activation.failed` (Error for a failure, Warning for a timeout; codes `activation.critical_readiness_failed` and `activation.critical_readiness_timed_out`, with the status and capability), then goes to Hidden. The next activation retries as cold. Cancelling the caller's token during the cold wait, or deactivating during it, returns to Hidden through Closing; the activation task then completes normally. `DeactivateAsync` is immediate and ignores its token so a shutting-down launcher can always close.
+- Diagnostics: `activation.requested` (with the kind), `activation.completed` (with the kind and duration), `activation.ignored`, `activation.cancelled`, `activation.deactivated`, `activation.aborted` and `activation.failed`. Hotkey-to-ready timing from the press timestamp is not wired yet (Task 7).
+- Tests: 15 new in `ActivationCoordinatorTests` (`Launcher.Core.Tests`), including 8 concurrent activations and a 6-thread activate/deactivate stress test that checks every transition is legal and chained. Expected total after this patch: 122 tests (107 + 15). One test waits about 100 ms for a real timeout.
+
 ## Next action
-Apply Task 6 Patch 4 (the `ReadinessCoordinator`), run restore, build and test, and paste the output. Then Patch 5 (`ActivationCoordinator`). The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
+Apply Task 6 Patch 5 (the `ActivationCoordinator`), run restore, build and test, and paste the output. Then Patch 6 (`ApplicationRuntime`), the last Task 6 patch. The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
