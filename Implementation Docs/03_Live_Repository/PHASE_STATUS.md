@@ -14,7 +14,7 @@
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | Next, by owner decision (ADR-0025). Design in ADR-0026. Patches 1 to 4 verified (107 of 107 tests); Patch 5 (`ActivationCoordinator`) added, awaiting the owner's build/test run |
+| 6. Lifecycle implementation behind Core contracts | By owner decision (ADR-0025). Design in ADR-0026. Patches 1 to 5 verified (122 of 122 tests); Patch 6 (`ApplicationRuntime`, the last Task 6 patch) added, awaiting the owner's build/test run. Task 6 is not complete until that run and the exit review |
 | 7. Diagnostics wiring and log location | Planned |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
@@ -52,6 +52,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Task 6 Patch 2 (lifecycle contracts and shape tests) applied on the owner machine on 2026-10-25: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 80 of 80 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 3 (`LauncherLifecycle` state machine) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 91 of 91 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 4 (`ReadinessCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 107 of 107 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- Task 6 Patch 5 (`ActivationCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 122 of 122 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -133,8 +134,17 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Diagnostics: `activation.requested` (with the kind), `activation.completed` (with the kind and duration), `activation.ignored`, `activation.cancelled`, `activation.deactivated`, `activation.aborted` and `activation.failed`. Hotkey-to-ready timing from the press timestamp is not wired yet (Task 7).
 - Tests: 15 new in `ActivationCoordinatorTests` (`Launcher.Core.Tests`), including 8 concurrent activations and a 6-thread activate/deactivate stress test that checks every transition is legal and chained. Expected total after this patch: 122 tests (107 + 15). One test waits about 100 ms for a real timeout.
 
+## Task 6 Patch 6 implementation notes (not yet verified by the owner)
+- `ApplicationRuntime` (public sealed, `Launcher.Core/Lifecycle`) implements `IApplicationRuntime` using only Core interfaces: the options, the lifecycle, `IActivationCoordinator`, `IHotkeyService`, `ISingleInstanceOwner`, diagnostics, and an optional `IIntegrationManager` (null while none exists). `Lifecycle` exposes the lifecycle.
+- Start order (spec section 6, ADR-0026 item 5): subscribe to the hotkey `Pressed` and second-instance `ActivationRequested` events first, acquire single-instance ownership, register the hotkey from the options, start the optional integrations on a background task, stay Hidden. A second instance (`OtherInstanceRunning`) signals the owner, unsubscribes and returns `AnotherInstanceRunning` without registering the hotkey. A single-instance `Failed` is logged as a Warning and start continues. A failed hotkey registration is logged (`runtime.hotkey_unavailable`) and carried in the result; start still succeeds and the lifecycle does not enter ErrorRecovery.
+- A hotkey press or a second-instance signal returns at once and starts an observed background activation (`runtime.activation_triggered` with the source); an exception is logged as `runtime.activation_failed` by type, never lost. After shutdown, presses do nothing.
+- Optional integrations run on `Task.Run`, so even one that blocks its thread cannot delay start or activation. Failures are logged by exception type only (`runtime.integrations_failed`). Shutdown cancels them and waits only a bounded time (2 s by default); a timeout is logged as `runtime.integrations_shutdown_timeout`.
+- Shutdown is idempotent: stop listening, deactivate (which cancels a cold wait), cancel the run, unregister the hotkey, release ownership in a `finally`, then stop integrations. Restart is shutdown followed by start in the same process. Start, shutdown and restart are serialized. A start that is cancelled or fails part-way unsubscribes, unregisters, releases ownership, and rethrows. Starting twice returns the same result.
+- Not done here, by design: nothing is wired into `Launcher.App` (Task 7); the press timestamp is not yet used for hotkey-to-ready timing (Task 7); the `IConfigurationService` is not used (options are injected).
+- Tests: 20 new in `ApplicationRuntimeTests` (`Launcher.Core.Tests`) with small fakes in `RuntimeFakes.cs`. Expected total after this patch: 142 tests (122 + 20). One test waits about 100 ms for a shutdown grace period.
+
 ## Next action
-Apply Task 6 Patch 5 (the `ActivationCoordinator`), run restore, build and test, and paste the output. Then Patch 6 (`ApplicationRuntime`), the last Task 6 patch. The order of the remaining Phase 1 tasks after Task 6 is still open (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
+Apply Task 6 Patch 6 (the `ApplicationRuntime`), run restore, build and test, and paste the output. Then the Task 6 exit review: record the evidence, check Task 6 against the ADR-0026 list and the spec, push, and decide the order of the remaining Phase 1 tasks (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
