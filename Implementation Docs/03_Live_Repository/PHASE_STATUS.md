@@ -15,7 +15,7 @@
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142). Not verified end to end: nothing is wired into Launcher.App (Task 7). Exit review below |
-| 7. Diagnostics wiring and log location | Next (ADR-0027); includes the composition root. Plan first |
+| 7. Diagnostics wiring and log location | Next (ADR-0027). Plan approved with the owner's correction (ADR-0028); Patch 1 of 4 (docs only) in progress |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numbers are the original list, not the order.
@@ -26,6 +26,13 @@ Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numb
 - ADR-0025: the owner chose to implement Task 6 (lifecycle) next, ahead of Tasks 3 to 5 and 7. `NEXT_PHASE.md`, specification section 31 and the roadmap disagree about order, so the deviation and the agent's Task 3 recommendation are recorded. The remaining order is decided at the Task 6 exit review.
 - ADR-0026: lifecycle design: Core components, a Phase 1 transition table, cold/warm definition, `IReadinessCoordinator`, `StartAsync` returning `ApplicationStartResult`, provisional presentation timing, failure policy.
 - ADR-0027 (2026-10-26): order after Task 6 is 7, 3, 5, 4 with Task 8 throughout, based on specification section 31 and the Questline; approved by the owner.
+- ADR-0028 (2026-10-26): Task 7 design: `DataLocations` in `Launcher.Data`, the composition root in `Launcher.App`, no custom Main, an empty critical readiness set until Task 5, minimal crash logging, and no second logging mechanism (the existing runtime, lifecycle, readiness and activation entries are the single diagnostics record; no separate latency entry).
+
+## Task 7 patch plan (one patch each; the owner applies it and pastes the output or log lines before the next)
+1. Documentation only: ADR-0028 and the state files.
+2. `DataLocations` in `Launcher.Data` with tests in `Launcher.Integration.Tests`.
+3. App wiring: project references, `AppComposition`, `App.OnLaunched`, minimal crash logging. Verified by the CI build and the manual check; no automated test (ADR-0028 item 6).
+4. Documentation only: the manual-check evidence, from the log lines the owner pastes.
 
 ## Task 6 patch plan (one patch each; the owner applies it and pastes restore, build and test output before the next)
 1. Documentation only: ADR-0025, ADR-0026, state files.
@@ -145,7 +152,7 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - A hotkey press or a second-instance signal returns at once and starts an observed background activation (`runtime.activation_triggered` with the source); an exception is logged as `runtime.activation_failed` by type, never lost. After shutdown, presses do nothing.
 - Optional integrations run on `Task.Run`, so even one that blocks its thread cannot delay start or activation. Failures are logged by exception type only (`runtime.integrations_failed`). Shutdown cancels them and waits only a bounded time (2 s by default); a timeout is logged as `runtime.integrations_shutdown_timeout`.
 - Shutdown is idempotent: stop listening, deactivate (which cancels a cold wait), cancel the run, unregister the hotkey, release ownership in a `finally`, then stop integrations. Restart is shutdown followed by start in the same process. Start, shutdown and restart are serialized. A start that is cancelled or fails part-way unsubscribes, unregisters, releases ownership, and rethrows. Starting twice returns the same result.
-- Not done here, by design: nothing is wired into `Launcher.App` (Task 7); the press timestamp is not yet used for hotkey-to-ready timing (Task 7); the `IConfigurationService` is not used (options are injected).
+- Not done here, by design: nothing is wired into `Launcher.App` (Task 7); the press timestamp is not used for hotkey-to-ready timing (deferred to the Task 4 and Task 5 performance measurements, ADR-0028); the `IConfigurationService` is not used (options are injected).
 - Tests: 20 new in `ApplicationRuntimeTests` (`Launcher.Core.Tests`) with small fakes in `RuntimeFakes.cs`. Expected total after this patch: 142 tests (122 + 20). One test waits about 100 ms for a shutdown grace period.
 
 ## Task 6 exit review (2026-10-26)
@@ -166,13 +173,13 @@ Status: implemented and verified by automated tests on the owner machine (Patche
 Open items carried forward (also in ADR-0027):
 1. A signal that re-focuses the input when an activation arrives while the launcher is visible: proposed in Task 5.
 2. The provisional presentation timing is revisited with its own ADR in Task 4.
-3. Hotkey-to-ready timing from the press timestamp, the names of the critical readiness capabilities and who reports them, how a second instance exits before the UI starts, and the log location through the data layer: decided in the Task 7 plan.
+3. Decided in the Task 7 plan (ADR-0028): the critical readiness set is empty until Task 5, a second instance exits from `OnLaunched` with no custom Main, and the log location comes from `DataLocations`. The press timestamp is not used for a separate latency entry: `activation.completed` is the single record, and UI-level first-usable-input timing is left to the Task 4 and Task 5 performance measurements.
 4. Ctrl+Win+Alt+Space has not been tried on the owner machine, and no real key press has reached the lifecycle: the Task 7 manual check.
 5. RESOLVED (2026-10-26): the owner pushed `phase-1-core-bar` (tip 49175b0) and GitHub Actions run #11 succeeded in Debug and Release (1m 49s), per the owner's screenshot; per-test counts are not shown.
 6. Persisting the hotkey and other options through `IConfigurationService` is a later task; the options are injected for now.
 
 ## Next action
-Plan Task 7 (composition root, diagnostics wiring, log location); plan only, no code until it is approved. ADR-0013 stays Proposed by the owner's choice.
+Apply Task 7 Patch 1 (documentation), then Patch 2 (`DataLocations` and tests). No code changes in Patch 1. ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.

@@ -21,7 +21,7 @@ Task 6 is done as library code (ADR-0026). The order of the remaining tasks is 7
 4. Activation visual layer and readiness coordinator: cold activation loops while critical startup runs, then morphs into the bar; warm activation reuses existing state. Optional providers never block activation. (The readiness coordinator is implemented in Task 6, ADR-0026.)
 5. Command bar UI: exact black rounded bar, keyboard-first input, focus returned to the input, tray access.
 6. Implement the lifecycle (`IApplicationRuntime`, `ILauncherLifecycle`, `IActivationCoordinator`) behind the Phase 0 contracts; semantic states drive the UI, and business code never starts animations directly. (Done as library code, verified by automated tests; wiring it into the app is Task 7.)
-7. Wire diagnostics into the app and decide the log file location through the data layer; distinguish cold and warm activation in diagnostics.
+7. Wire diagnostics into the app and decide the log file location through the data layer; distinguish cold and warm activation in diagnostics. (Planned in ADR-0028: reuse the existing diagnostics entries, no new logging mechanism.)
 8. Create the test projects that gain their first real tests, and add the corresponding `TESTS.md` rows.
 
 ## Do not build yet

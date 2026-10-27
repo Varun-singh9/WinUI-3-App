@@ -25,7 +25,7 @@ See "Carried forward" in PHASE_STATUS.md and ADR-0022. The most important: ADR-0
 - xUnit.net v3 on Microsoft Testing Platform; CI on GitHub Actions `windows-2025`
 
 ## Next action
-Plan Task 7 (composition root, diagnostics wiring, log location), which gives the first manual check of the hotkey; plan only, no code until approved. Order after Task 6 is ADR-0027: 7, 3, 5, 4, with Task 8 throughout.
+Apply the Task 7 patches in order (PHASE_STATUS.md): the design is ADR-0028. The first manual check comes with the app wiring (Patch 3). Order after Task 6 is ADR-0027: 7, 3, 5, 4, with Task 8 throughout.
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.
