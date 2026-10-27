@@ -1,7 +1,7 @@
 # Phase Status — V3.0
 
 - Current phase: Phase 1 — Core + Exact Command Bar
-- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. Task 1 library code (single instance, hotkey) is implemented and verified on the owner machine; nothing is wired into `Launcher.App` yet.
+- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. Tasks 1, 2 and 6 are implemented as library code and verified by automated tests on the owner machine (142 of 142); nothing is wired into `Launcher.App` yet.
 - Objective: make the launcher open: global hotkey, single instance, active-monitor placement, the activation visual with the readiness coordinator, and the exact black rounded command bar with keyboard-first input and tray access (NEXT_PHASE.md).
 - Phase 0: COMPLETE — merged to `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22 (ADR-0022). Its exit review is kept below.
 
@@ -14,15 +14,18 @@
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | By owner decision (ADR-0025). Design in ADR-0026. Patches 1 to 5 verified (122 of 122 tests); Patch 6 (`ApplicationRuntime`, the last Task 6 patch) added, awaiting the owner's build/test run. Task 6 is not complete until that run and the exit review |
-| 7. Diagnostics wiring and log location | Planned |
+| 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142). Not verified end to end: nothing is wired into Launcher.App (Task 7). Exit review below |
+| 7. Diagnostics wiring and log location | Next (ADR-0027); includes the composition root. Plan first |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
+
+Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numbers are the original list, not the order.
 
 ## Phase 1 decisions (2026-10-23)
 - ADR-0023: `LauncherState` stays as is; the roadmap state list is a presentation vocabulary (closes carried-forward item 4).
 - ADR-0024: orchestration in Core, Win32 hotkey and single-instance in Launcher.Integrations, wired in Launcher.App; two new Core interfaces `IHotkeyService` and `ISingleInstanceOwner`; per-user named mutex plus an `EventWaitHandle` signal; default hotkey Ctrl+Win+Alt+Space, injected; no new packages.
 - ADR-0025: the owner chose to implement Task 6 (lifecycle) next, ahead of Tasks 3 to 5 and 7. `NEXT_PHASE.md`, specification section 31 and the roadmap disagree about order, so the deviation and the agent's Task 3 recommendation are recorded. The remaining order is decided at the Task 6 exit review.
 - ADR-0026: lifecycle design: Core components, a Phase 1 transition table, cold/warm definition, `IReadinessCoordinator`, `StartAsync` returning `ApplicationStartResult`, provisional presentation timing, failure policy.
+- ADR-0027 (2026-10-26): order after Task 6 is 7, 3, 5, 4 with Task 8 throughout, based on specification section 31 and the Questline; approved by the owner.
 
 ## Task 6 patch plan (one patch each; the owner applies it and pastes restore, build and test output before the next)
 1. Documentation only: ADR-0025, ADR-0026, state files.
@@ -53,6 +56,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Task 6 Patch 3 (`LauncherLifecycle` state machine) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 91 of 91 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 4 (`ReadinessCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 107 of 107 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 5 (`ActivationCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 122 of 122 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- Task 6 Patch 6 (`ApplicationRuntime`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 142 of 142 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -134,7 +138,7 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Diagnostics: `activation.requested` (with the kind), `activation.completed` (with the kind and duration), `activation.ignored`, `activation.cancelled`, `activation.deactivated`, `activation.aborted` and `activation.failed`. Hotkey-to-ready timing from the press timestamp is not wired yet (Task 7).
 - Tests: 15 new in `ActivationCoordinatorTests` (`Launcher.Core.Tests`), including 8 concurrent activations and a 6-thread activate/deactivate stress test that checks every transition is legal and chained. Expected total after this patch: 122 tests (107 + 15). One test waits about 100 ms for a real timeout.
 
-## Task 6 Patch 6 implementation notes (not yet verified by the owner)
+## Task 6 Patch 6 implementation notes (verified by the owner's run, see evidence above)
 - `ApplicationRuntime` (public sealed, `Launcher.Core/Lifecycle`) implements `IApplicationRuntime` using only Core interfaces: the options, the lifecycle, `IActivationCoordinator`, `IHotkeyService`, `ISingleInstanceOwner`, diagnostics, and an optional `IIntegrationManager` (null while none exists). `Lifecycle` exposes the lifecycle.
 - Start order (spec section 6, ADR-0026 item 5): subscribe to the hotkey `Pressed` and second-instance `ActivationRequested` events first, acquire single-instance ownership, register the hotkey from the options, start the optional integrations on a background task, stay Hidden. A second instance (`OtherInstanceRunning`) signals the owner, unsubscribes and returns `AnotherInstanceRunning` without registering the hotkey. A single-instance `Failed` is logged as a Warning and start continues. A failed hotkey registration is logged (`runtime.hotkey_unavailable`) and carried in the result; start still succeeds and the lifecycle does not enter ErrorRecovery.
 - A hotkey press or a second-instance signal returns at once and starts an observed background activation (`runtime.activation_triggered` with the source); an exception is logged as `runtime.activation_failed` by type, never lost. After shutdown, presses do nothing.
@@ -143,8 +147,31 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Not done here, by design: nothing is wired into `Launcher.App` (Task 7); the press timestamp is not yet used for hotkey-to-ready timing (Task 7); the `IConfigurationService` is not used (options are injected).
 - Tests: 20 new in `ApplicationRuntimeTests` (`Launcher.Core.Tests`) with small fakes in `RuntimeFakes.cs`. Expected total after this patch: 142 tests (122 + 20). One test waits about 100 ms for a shutdown grace period.
 
+## Task 6 exit review (2026-10-26)
+Status: implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142 tests, 0 skipped). Not verified end to end: nothing is wired into `Launcher.App` until Task 7, so no real key press has reached the lifecycle and nothing can be tried by hand. Release was not run locally; CI runs it after the owner pushes.
+
+| ADR-0026 item | Where it is implemented | Evidence |
+|---|---|---|
+| 1. Core components, internal transition method, internals visible to the tests only | `LauncherLifecycle`, `ReadinessCoordinator`, `ActivationCoordinator`, `ApplicationRuntime` in `Launcher.Core/Lifecycle` | Architecture tests (Core references only PluginContracts) and the lifecycle tests, all passing |
+| 2. Phase 1 transition table, illegal transitions rejected and logged | `LifecycleTransitions` | `LauncherLifecycleTests`: all 121 state pairs checked against the 15 legal transitions |
+| 3. Cold and warm paths, visible-state requests change nothing | `ActivationCoordinator` | `ActivationCoordinatorTests` |
+| 4. `IReadinessCoordinator`, optional capabilities never gate, 5 s default timeout | `ReadinessCoordinator`, `ApplicationRuntimeOptions` | `ReadinessCoordinatorTests`, `LifecycleContractTests` (the 5 s default is pinned) |
+| 5. Runtime start order, injected options, optional integration manager | `ApplicationRuntime` | `ApplicationRuntimeTests` |
+| 6. `StartAsync` returns `ApplicationStartResult` | `IApplicationRuntime`, `ApplicationStartResult` | `LifecycleContractTests`, `ApplicationRuntimeTests` |
+| 7. Provisional presentation timing | `ActivationCoordinator` | `ActivationCoordinatorTests`; revisited in Task 4 |
+| 8. Failure policy | `ApplicationRuntime`, `ActivationCoordinator` | `ApplicationRuntimeTests`, `ActivationCoordinatorTests` |
+| 9. Ordered events, handler isolation, diagnostics | `LauncherLifecycle`, `LifecycleLog` | `LauncherLifecycleTests` (including 8-thread concurrency) |
+
+Open items carried forward (also in ADR-0027):
+1. A signal that re-focuses the input when an activation arrives while the launcher is visible: proposed in Task 5.
+2. The provisional presentation timing is revisited with its own ADR in Task 4.
+3. Hotkey-to-ready timing from the press timestamp, the names of the critical readiness capabilities and who reports them, how a second instance exits before the UI starts, and the log location through the data layer: decided in the Task 7 plan.
+4. Ctrl+Win+Alt+Space has not been tried on the owner machine, and no real key press has reached the lifecycle: the Task 7 manual check.
+5. The Phase 1 commits since `d098816` are not pushed and CI has not run on them: the owner pushes, then the agent records the CI result.
+6. Persisting the hotkey and other options through `IConfigurationService` is a later task; the options are injected for now.
+
 ## Next action
-Apply Task 6 Patch 6 (the `ApplicationRuntime`), run restore, build and test, and paste the output. Then the Task 6 exit review: record the evidence, check Task 6 against the ADR-0026 list and the spec, push, and decide the order of the remaining Phase 1 tasks (ADR-0025). ADR-0013 stays Proposed by the owner's choice.
+The owner pushes `phase-1-core-bar` and the agent checks the CI result. Then plan Task 7 (composition root, diagnostics wiring, log location); plan only, no code until it is approved. ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.

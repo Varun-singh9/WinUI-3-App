@@ -294,6 +294,17 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Date: 2026-10-23
 - Approved by: Project owner
 
+## ADR-0027 — Phase 1 Order After Task 6: 7, 3, 5, 4, with 8 Throughout
+- Status: Accepted. Closes the open question in ADR-0025. The owner approved the coding agent's recommendation on 2026-10-26.
+- Decision: after Task 6, implement Task 7 (composition root, diagnostics wiring and log location), then Task 3 (active-monitor placement, bottom gap, DPI), then Task 5 (command bar UI, focus, tray), then Task 4 (activation visual). Task 8 (test projects and `TESTS.md` rows) accumulates throughout and is closed at the phase exit. The numbers in `NEXT_PHASE.md` are the original list, not the order.
+- Basis: Implementation Specification section 31 sequences foundation (diagnostics and runtime), then the native shell (window, command bar, focus, active-monitor positioning), then the activation lifecycle, then the motion system (activation visual and morph). Task 6 is already done by ADR-0025. Task 7 is the foundation wiring, Tasks 3 and 5 are the native shell, and Task 4 is motion. The Questline puts the visual's morph into the command bar (Q02), so the bar (Task 5) comes before the visual (Task 4). The original `NEXT_PHASE.md` order (3, 4, 5, 7, 8) put the visual before the bar and the wiring last; this order differs from it in two places, Task 7 first and Task 5 before Task 4.
+- Why Task 7 first: the lifecycle and runtime exist only as tested library code. Wiring them into the app gives the first end-to-end manual check (a hotkey press, state changes in the log, a second copy exiting) before UI is built on top, so the shell tasks plug into a running runtime instead of fakes.
+- Open items carried into the later tasks: Task 5 proposes the signal that re-focuses the input when an activation arrives while the launcher is visible; Task 4 revisits the provisional presentation timing (ADR-0026 item 7) with its own ADR; Task 7 uses the hotkey press timestamp for hotkey-to-ready timing, names the critical readiness capabilities and who reports them, decides how a second instance exits before the UI starts, and decides the log location through the data layer (which has no implementation yet).
+- Alternatives: the original `NEXT_PHASE.md` order (3, 4, 5, 7, 8); Task 3 first, then Tasks 5, 4, 7.
+- Consequences: `NEXT_PHASE.md` and `PHASE_STATUS.md` are updated; no code changes. Risk: Task 7 has no visible UI, so its manual check is reading the log. Each remaining task is planned and approved before code, as before.
+- Date: 2026-10-26
+- Approved by: Project owner
+
 ## Rules
 - Architecture-boundary changes require an ADR.
 - New dependencies require impact notes and an entry in `DEPENDENCIES.md`.
