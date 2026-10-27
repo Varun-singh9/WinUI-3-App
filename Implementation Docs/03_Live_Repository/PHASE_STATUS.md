@@ -57,6 +57,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Task 6 Patch 4 (`ReadinessCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 107 of 107 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 5 (`ActivationCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 122 of 122 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 6 (`ApplicationRuntime`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 142 of 142 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- CI for the Phase 1 commits (owner's screenshot, 2026-10-26): run #11 on `49175b0`, triggered by the owner's push to `phase-1-core-bar`, concluded Success in 1m 49s, with `build-and-test (Debug)` and `build-and-test (Release)` both green. This is the first Release build and test of the Phase 1 code.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -148,7 +149,7 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Tests: 20 new in `ApplicationRuntimeTests` (`Launcher.Core.Tests`) with small fakes in `RuntimeFakes.cs`. Expected total after this patch: 142 tests (122 + 20). One test waits about 100 ms for a shutdown grace period.
 
 ## Task 6 exit review (2026-10-26)
-Status: implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142 tests, 0 skipped). Not verified end to end: nothing is wired into `Launcher.App` until Task 7, so no real key press has reached the lifecycle and nothing can be tried by hand. Release was not run locally; CI runs it after the owner pushes.
+Status: implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142 tests, 0 skipped). Not verified end to end: nothing is wired into `Launcher.App` until Task 7, so no real key press has reached the lifecycle and nothing can be tried by hand. Release was not run locally; GitHub Actions run #11 on 49175b0 built and tested Debug and Release successfully (owner's screenshot, per-test counts not shown).
 
 | ADR-0026 item | Where it is implemented | Evidence |
 |---|---|---|
@@ -167,11 +168,11 @@ Open items carried forward (also in ADR-0027):
 2. The provisional presentation timing is revisited with its own ADR in Task 4.
 3. Hotkey-to-ready timing from the press timestamp, the names of the critical readiness capabilities and who reports them, how a second instance exits before the UI starts, and the log location through the data layer: decided in the Task 7 plan.
 4. Ctrl+Win+Alt+Space has not been tried on the owner machine, and no real key press has reached the lifecycle: the Task 7 manual check.
-5. The Phase 1 commits since `d098816` are not pushed and CI has not run on them: the owner pushes, then the agent records the CI result.
+5. RESOLVED (2026-10-26): the owner pushed `phase-1-core-bar` (tip 49175b0) and GitHub Actions run #11 succeeded in Debug and Release (1m 49s), per the owner's screenshot; per-test counts are not shown.
 6. Persisting the hotkey and other options through `IConfigurationService` is a later task; the options are injected for now.
 
 ## Next action
-The owner pushes `phase-1-core-bar` and the agent checks the CI result. Then plan Task 7 (composition root, diagnostics wiring, log location); plan only, no code until it is approved. ADR-0013 stays Proposed by the owner's choice.
+Plan Task 7 (composition root, diagnostics wiring, log location); plan only, no code until it is approved. ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
