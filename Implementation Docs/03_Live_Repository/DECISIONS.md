@@ -263,7 +263,7 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 ## ADR-0025 — Phase 1 Task Order: Lifecycle (Task 6) Before Tasks 3 to 5
 - Status: Accepted. Owner decision, recorded because the source documents disagree about order.
 - Decision: Implement Task 6 (the lifecycle behind `IApplicationRuntime`, `ILauncherLifecycle` and `IActivationCoordinator`, with the readiness gate) next, before Tasks 3, 4, 5 and 7. The order of the remaining tasks is decided at the Task 6 exit review. Tasks 1 and 2 are unaffected.
-- Evidence that the documents disagree (checked 2026-10-23):
+- Evidence that the documents disagree (checked 2026-10-25):
   - `NEXT_PHASE.md` lists 3 placement, 4 visual and readiness coordinator, 5 bar, 6 lifecycle, 7 diagnostics, 8 tests. It does not state that the numbering is mandatory.
   - Implementation Specification section 31 sequences (2) native shell (window, command bar, focus, active-monitor positioning), (3) activation lifecycle (hotkey, cold/warm state machine, critical readiness, semantic motion hooks), (4) motion system (activation visual, morph).
   - Roadmap Phase 1 lists the bar and placement first, then the UI state machine, then the activation visual layer and readiness coordinator. The Questline puts "startup/lifecycle" in Q01 and the morph into the command bar in Q02.
@@ -272,7 +272,7 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Context: Task 3 needs no lifecycle state, Task 5 needs only contracts that already exist, and Task 4 needs contract decisions rather than an implementation. So the lifecycle is not required to be implemented first; the owner chose to implement it first.
 - Alternatives: follow the `NEXT_PHASE.md` order (Task 3 next); follow section 31 (3, then 5, then 6, then 4).
 - Consequences: the lifecycle is implemented and tested against fakes before the shell and bar exist, and nothing is wired into `Launcher.App` until Task 7, so the first manual check of the hotkey comes later. Risk: lifecycle decisions are made before the bar and the visual exist. They are mitigated by the provisional presentation timing in ADR-0026, which Task 4 revisits with its own ADR. The remaining order (3, 4, 5, 7, 8) is open until the Task 6 exit review.
-- Date: 2026-10-23
+- Date: 2026-10-25
 - Approved by: Project owner
 
 ## ADR-0026 — Phase 1 Lifecycle Design (Task 6)
@@ -291,22 +291,22 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Context: Implementation Specification sections 4.2, 5, 6 and 7; the Motion and Interaction Specification (animation never blocks input; warm activation can start near the end of the sequence); ADR-0018, ADR-0019, ADR-0020, ADR-0023, ADR-0024 and ADR-0025.
 - Alternatives: put the readiness gate in Task 4 (as `NEXT_PHASE.md` Task 4 reads); a hotkey press toggles visibility; wait for a presentation-completion report now.
 - Consequences: new members and types are added in Patch 2 and recorded in PHASE_STATUS; the contract-shape tests for the existing contracts are unchanged and new shape tests are added; `DependencyRules.cs` and the dependency register are unchanged; no new packages.
-- Date: 2026-10-23
+- Date: 2026-10-25
 - Approved by: Project owner
 
 ## ADR-0027 — Phase 1 Order After Task 6: 7, 3, 5, 4, with 8 Throughout
-- Status: Accepted. Closes the open question in ADR-0025. The owner approved the coding agent's recommendation on 2026-10-26.
+- Status: Accepted. Closes the open question in ADR-0025. The owner approved the coding agent's recommendation on 2026-10-27.
 - Decision: after Task 6, implement Task 7 (composition root, diagnostics wiring and log location), then Task 3 (active-monitor placement, bottom gap, DPI), then Task 5 (command bar UI, focus, tray), then Task 4 (activation visual). Task 8 (test projects and `TESTS.md` rows) accumulates throughout and is closed at the phase exit. The numbers in `NEXT_PHASE.md` are the original list, not the order.
 - Basis: Implementation Specification section 31 sequences foundation (diagnostics and runtime), then the native shell (window, command bar, focus, active-monitor positioning), then the activation lifecycle, then the motion system (activation visual and morph). Task 6 is already done by ADR-0025. Task 7 is the foundation wiring, Tasks 3 and 5 are the native shell, and Task 4 is motion. The Questline puts the visual's morph into the command bar (Q02), so the bar (Task 5) comes before the visual (Task 4). The original `NEXT_PHASE.md` order (3, 4, 5, 7, 8) put the visual before the bar and the wiring last; this order differs from it in two places, Task 7 first and Task 5 before Task 4.
 - Why Task 7 first: the lifecycle and runtime exist only as tested library code. Wiring them into the app gives the first end-to-end manual check (a hotkey press, state changes in the log, a second copy exiting) before UI is built on top, so the shell tasks plug into a running runtime instead of fakes.
 - Open items carried into the later tasks: Task 5 proposes the signal that re-focuses the input when an activation arrives while the launcher is visible; Task 4 revisits the provisional presentation timing (ADR-0026 item 7) with its own ADR; Task 7 uses the hotkey press timestamp for hotkey-to-ready timing, names the critical readiness capabilities and who reports them, decides how a second instance exits before the UI starts, and decides the log location through the data layer (which has no implementation yet).
 - Alternatives: the original `NEXT_PHASE.md` order (3, 4, 5, 7, 8); Task 3 first, then Tasks 5, 4, 7.
 - Consequences: `NEXT_PHASE.md` and `PHASE_STATUS.md` are updated; no code changes. Risk: Task 7 has no visible UI, so its manual check is reading the log. Each remaining task is planned and approved before code, as before.
-- Date: 2026-10-26
+- Date: 2026-10-27
 - Approved by: Project owner
 
 ## ADR-0028 — Phase 1 Task 7: Composition Root, Data Locations and Diagnostics Wiring
-- Status: Accepted. Design only; nothing in this record is implemented yet. The owner approved the plan and its defaults on 2026-10-26 with one correction: Task 7 must reuse the existing diagnostics and contracts and must not add a second, parallel logging mechanism.
+- Status: Accepted. Design only; nothing in this record is implemented yet. The owner approved the plan and its defaults with one correction: Task 7 must reuse the existing diagnostics and contracts and must not add a second, parallel logging mechanism.
 - Decision:
   1. Data locations: a small public `DataLocations` class in `Launcher.Data`, with no new Core interface (nothing in Core needs one yet, and ADR-0018 asks for an interface only for a documented gap). It gives a per-user root at `%LOCALAPPDATA%\Launcher`, a `logs` subfolder and the log file path `launcher.log`. The root is injectable for tests, must be absolute, and the folder name is validated. It only computes paths: the existing `JsonLinesFileSink` already creates the directory, so that is not duplicated. The folder name `Launcher` is provisional because the documents settle no product name; renaming it costs nothing for logs but needs a migration once configuration or a database lives there. A single root also gives a later "reset application data" one place to act on.
   2. Composition root: `AppComposition` in `Launcher.App`, which the dependency rules already allow to reference Core, Diagnostics, Integrations and Data. It only constructs types that already exist: `JsonLinesFileSink`, `DiagnosticsService`, `LauncherLifecycle`, `ReadinessCoordinator`, `ActivationCoordinator`, `SingleInstanceOwner` with its default names, `HotkeyService` and `ApplicationRuntime`, with `HotkeyDefaults.LauncherGesture` and the 5 second default readiness timeout. The critical readiness set is empty until Task 5 names the real critical capabilities, so a cold activation completes at once.
@@ -319,7 +319,7 @@ Use one entry per non-trivial decision. Architecture-boundary changes, major dep
 - Context: `NEXT_PHASE.md` Task 7; Implementation Specification sections 6, 7 and 21; ADR-0007, ADR-0014, ADR-0018, ADR-0019, ADR-0020, ADR-0024, ADR-0026 and ADR-0027; the data privacy document.
 - Alternatives: a Core `IDataLocations` interface now; a custom `Main` that exits before XAML starts; a separate hotkey-to-ready latency entry; logging the exception message and stack; a placeholder critical capability.
 - Consequences: no new packages and no new contracts. `Launcher.App` gains project references. The manual check is the first one in the project and is recorded in a later patch from the log lines the owner pastes. Warm activation cannot be checked by hand until Task 5 adds a way to deactivate.
-- Date: 2026-10-26
+- Date: 2026-10-28
 - Approved by: Project owner
 
 ## Rules

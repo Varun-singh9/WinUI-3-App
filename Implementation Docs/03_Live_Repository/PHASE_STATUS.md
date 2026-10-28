@@ -15,7 +15,7 @@
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142). Not verified end to end: nothing is wired into Launcher.App (Task 7). Exit review below |
-| 7. Diagnostics wiring and log location | Next (ADR-0027). Design in ADR-0028. Patch 1 (docs) applied; Patch 2 (`DataLocations` and tests) added, awaiting the owner's build/test run |
+| 7. Diagnostics wiring and log location | Next (ADR-0027). Design in ADR-0028. Patches 1 (docs) and 2 (`DataLocations`, 165 of 165 tests) verified; Patch 3 (the app wiring and the first manual check) is next |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numbers are the original list, not the order.
@@ -25,8 +25,8 @@ Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numb
 - ADR-0024: orchestration in Core, Win32 hotkey and single-instance in Launcher.Integrations, wired in Launcher.App; two new Core interfaces `IHotkeyService` and `ISingleInstanceOwner`; per-user named mutex plus an `EventWaitHandle` signal; default hotkey Ctrl+Win+Alt+Space, injected; no new packages.
 - ADR-0025: the owner chose to implement Task 6 (lifecycle) next, ahead of Tasks 3 to 5 and 7. `NEXT_PHASE.md`, specification section 31 and the roadmap disagree about order, so the deviation and the agent's Task 3 recommendation are recorded. The remaining order is decided at the Task 6 exit review.
 - ADR-0026: lifecycle design: Core components, a Phase 1 transition table, cold/warm definition, `IReadinessCoordinator`, `StartAsync` returning `ApplicationStartResult`, provisional presentation timing, failure policy.
-- ADR-0027 (2026-10-26): order after Task 6 is 7, 3, 5, 4 with Task 8 throughout, based on specification section 31 and the Questline; approved by the owner.
-- ADR-0028 (2026-10-26): Task 7 design: `DataLocations` in `Launcher.Data`, the composition root in `Launcher.App`, no custom Main, an empty critical readiness set until Task 5, minimal crash logging, and no second logging mechanism (the existing runtime, lifecycle, readiness and activation entries are the single diagnostics record; no separate latency entry).
+- ADR-0027 (2026-10-27): order after Task 6 is 7, 3, 5, 4 with Task 8 throughout, based on specification section 31 and the Questline; approved by the owner.
+- ADR-0028 (2026-10-28): Task 7 design: `DataLocations` in `Launcher.Data`, the composition root in `Launcher.App`, no custom Main, an empty critical readiness set until Task 5, minimal crash logging, and no second logging mechanism (the existing runtime, lifecycle, readiness and activation entries are the single diagnostics record; no separate latency entry).
 
 ## Task 7 patch plan (one patch each; the owner applies it and pastes the output or log lines before the next)
 1. Documentation only: ADR-0028 and the state files.
@@ -54,17 +54,19 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Task 6 Patch 2 (ADR-0026, all in `Launcher.Core`, namespace `Launcher.Core.Lifecycle`; shapes only): new `IReadinessCoordinator` (`IsCriticalReady`, `ReportReady`, `ReportFailed`, `WaitForCriticalAsync`), `ReadinessStatus` (Ready, Failed, TimedOut, Cancelled), `ReadinessResult`, `ApplicationRuntimeOptions` (with the owner-approved 5 s `DefaultCriticalReadinessTimeout`), `ApplicationStartStatus` (Started, AnotherInstanceRunning) and `ApplicationStartResult`. Changed: `IApplicationRuntime.StartAsync` now returns `Task<ApplicationStartResult>` (a change beyond ADR-0018's additions, recorded in ADR-0026 item 6; nothing used the old shape). The existing pinned contract-shape tests are unchanged.
 
 ## Phase 1 evidence (from output pasted by the owner)
+- Date correction (2026-10-28): the dates in this section, in `TESTS.md` and in the ADR records were corrected from the committer dates of the owner's commits (IST). Earlier values were the coding agent's assumption of the date and were wrong for several entries.
 - Patch 1 (docs and comment fixes) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 23 of 23 tests passed. Release build was not run for this patch.
-- Patch 2 (hotkey and single-instance contracts plus contract-shape tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 30 of 30 tests passed. Release build was not run for this patch.
-- Patch 3 (single-instance implementation and the new `Launcher.Integration.Tests` project) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 48 of 48 tests, 0 failed, 0 skipped. Release build was not run for this patch.
-- Patch 4 (hotkey service and tests) applied on the owner machine on 2026-10-23: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 73 of 73 tests, 0 failed, 0 skipped, so the two `RealHotkeyTests` ran against the real Windows hotkey API. Release build was not run for this patch.
+- Patch 2 (hotkey and single-instance contracts plus contract-shape tests) applied on the owner machine on 2026-10-24: `dotnet restore`, `dotnet build -c Debug` (16 projects) and `dotnet test -c Debug` succeeded, 30 of 30 tests passed. Release build was not run for this patch.
+- Patch 3 (single-instance implementation and the new `Launcher.Integration.Tests` project) applied on the owner machine on 2026-10-24: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 48 of 48 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- Patch 4 (hotkey service and tests) applied on the owner machine on 2026-10-24: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 73 of 73 tests, 0 failed, 0 skipped, so the two `RealHotkeyTests` ran against the real Windows hotkey API. Release build was not run for this patch.
 - Task 6 Patch 1 (ADR-0025 and ADR-0026, docs only) applied by the owner and pushed. Verified by the coding agent against the remote on 2026-10-25: origin/phase-1-core-bar holds all six Phase 1 commits with content identical to the agent's tree, `main` is unchanged at f7d4175, and tag `phase-0-complete` exists. CI: GitHub Actions run on push d098816 (branch phase-1-core-bar, created 2026-10-25T04:34Z) concluded success according to the GitHub API, fetched by the coding agent; ci.yml runs restore, build and test in Debug and Release, so that covers both configurations; per-test counts are not visible in the API response. The earlier run on a2ec042 (2026-10-24) also concluded success.
 - Task 6 Patch 2 (lifecycle contracts and shape tests) applied on the owner machine on 2026-10-25: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 80 of 80 tests, 0 failed, 0 skipped. Release build was not run for this patch.
-- Task 6 Patch 3 (`LauncherLifecycle` state machine) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 91 of 91 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- Task 6 Patch 3 (`LauncherLifecycle` state machine) applied on the owner machine on 2026-10-25: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 91 of 91 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 4 (`ReadinessCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 107 of 107 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - Task 6 Patch 5 (`ActivationCoordinator`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 122 of 122 tests, 0 failed, 0 skipped. Release build was not run for this patch.
-- Task 6 Patch 6 (`ApplicationRuntime`) applied on the owner machine on 2026-10-26: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 142 of 142 tests, 0 failed, 0 skipped. Release build was not run for this patch.
-- CI for the Phase 1 commits (owner's screenshot, 2026-10-26): run #11 on `49175b0`, triggered by the owner's push to `phase-1-core-bar`, concluded Success in 1m 49s, with `build-and-test (Debug)` and `build-and-test (Release)` both green. This is the first Release build and test of the Phase 1 code.
+- Task 6 Patch 6 (`ApplicationRuntime`) applied on the owner machine on 2026-10-27: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 142 of 142 tests, 0 failed, 0 skipped. Release build was not run for this patch.
+- CI for the Phase 1 commits (owner's screenshot, 2026-10-27): run #11 on `49175b0`, triggered by the owner's push to `phase-1-core-bar`, concluded Success in 1m 49s, with `build-and-test (Debug)` and `build-and-test (Release)` both green. This is the first Release build and test of the Phase 1 code.
+- Task 7 Patches 1 (docs, ADR-0028) and 2 (`DataLocations` and tests) applied on the owner machine on 2026-10-28: `dotnet restore`, `dotnet build -c Debug` and `dotnet test -c Debug` succeeded; both test assemblies passed, 165 of 165 tests, 0 failed, 0 skipped. Release build was not run for these patches.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -155,7 +157,7 @@ See `DECISIONS.md` for ADR-0001 through ADR-0024.
 - Not done here, by design: nothing is wired into `Launcher.App` (Task 7); the press timestamp is not used for hotkey-to-ready timing (deferred to the Task 4 and Task 5 performance measurements, ADR-0028); the `IConfigurationService` is not used (options are injected).
 - Tests: 20 new in `ApplicationRuntimeTests` (`Launcher.Core.Tests`) with small fakes in `RuntimeFakes.cs`. Expected total after this patch: 142 tests (122 + 20). One test waits about 100 ms for a shutdown grace period.
 
-## Task 6 exit review (2026-10-26)
+## Task 6 exit review (2026-10-27)
 Status: implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142 tests, 0 skipped). Not verified end to end: nothing is wired into `Launcher.App` until Task 7, so no real key press has reached the lifecycle and nothing can be tried by hand. Release was not run locally; GitHub Actions run #11 on 49175b0 built and tested Debug and Release successfully (owner's screenshot, per-test counts not shown).
 
 | ADR-0026 item | Where it is implemented | Evidence |
@@ -175,16 +177,16 @@ Open items carried forward (also in ADR-0027):
 2. The provisional presentation timing is revisited with its own ADR in Task 4.
 3. Decided in the Task 7 plan (ADR-0028): the critical readiness set is empty until Task 5, a second instance exits from `OnLaunched` with no custom Main, and the log location comes from `DataLocations`. The press timestamp is not used for a separate latency entry: `activation.completed` is the single record, and UI-level first-usable-input timing is left to the Task 4 and Task 5 performance measurements.
 4. Ctrl+Win+Alt+Space has not been tried on the owner machine, and no real key press has reached the lifecycle: the Task 7 manual check.
-5. RESOLVED (2026-10-26): the owner pushed `phase-1-core-bar` (tip 49175b0) and GitHub Actions run #11 succeeded in Debug and Release (1m 49s), per the owner's screenshot; per-test counts are not shown.
+5. RESOLVED (2026-10-27): the owner pushed `phase-1-core-bar` (tip 49175b0) and GitHub Actions run #11 succeeded in Debug and Release (1m 49s), per the owner's screenshot; per-test counts are not shown.
 6. Persisting the hotkey and other options through `IConfigurationService` is a later task; the options are injected for now.
 
-## Task 7 Patch 2 implementation notes (not yet verified by the owner)
+## Task 7 Patch 2 implementation notes (verified by the owner's run, see evidence above)
 - `DataLocations` (public sealed, `Launcher.Data`) computes the per-user data paths and nothing else: it creates no folder, because the existing `JsonLinesFileSink` creates the directory when it writes. No new Core interface and no new package.
 - `DataLocations.ForCurrentUser()` gives the root `%LOCALAPPDATA%\Launcher` (the folder name is provisional, ADR-0028), the `logs` folder and `launcher.log`. A chosen root must be fully qualified; it is normalized and a trailing separator is removed. A folder name must be a single valid name: not blank, not `.` or `..`, no `< > : " / \ | ? *` or control characters, and not ending with a dot or space. That character list is explicit, so the rule is the same on any operating system. The three default names are pinned by a test because changing them moves user data.
 - Tests: 23 new in `DataLocationsTests` (`Launcher.Integration.Tests`, which now references `Launcher.Data`). Expected total after this patch: 165 tests (142 + 23).
 
 ## Next action
-Apply Task 7 Patch 2 (`DataLocations` and tests), run restore, build and test, and paste the output. Then Patch 3 (the app wiring and the first manual check). ADR-0013 stays Proposed by the owner's choice.
+Apply the two docs patches (date corrections and the References index), then Task 7 Patch 3 (the app wiring, crash logging and the first manual check). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
