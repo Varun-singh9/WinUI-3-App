@@ -22,6 +22,7 @@ V3.0 keeps the approved product direction and engineering boundaries from V2.8, 
 7. `01_Product_and_Roadmap/15_Future_Roadmap.docx` and `16_Extension_Pack.docx` — deferred scope and extended rules.
 8. `03_Live_Repository/*` — live implementation state and records once coding starts.
 9. `04_History_and_Tracking/CHANGELOG.md` and `05_Meta/*` — history, package identity and audit metadata.
+10. `References/*` — illustrative design reference images (see `References/README.md`). They sit below every document above and never override one.
 
 If a lower-level document conflicts with a higher-level source of truth, stop and record a decision in `03_Live_Repository/DECISIONS.md`.
 

@@ -100,6 +100,7 @@ Result values: `TODO`, `PASS`, `FAIL`, or `BLOCKED`. Compilation alone never mak
 | Installer | User-data preservation | TODO | |
 | Release | Application/installer signing | TODO | |
 | Release | Dependency/license inventory | TODO | |
+| Release | Design reference images removed from the repository (rights unconfirmed) | TODO | Owner statement 2026-10-28: the images in `Implementation Docs/References` were made with a forgotten tool and are to be removed at the end; see `References/README.md` |
 | Release | User-initiated verified update/recovery | TODO | |
 | Release | Rollback | TODO | |
 | Release | SHA-256 artifact integrity | TODO | |
