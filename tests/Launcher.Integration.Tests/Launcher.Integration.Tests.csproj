@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\src\Launcher.Core\Launcher.Core.csproj" />
     <ProjectReference Include="..\..\src\Launcher.Integrations\Launcher.Integrations.csproj" />
     <ProjectReference Include="..\..\src\Launcher.Diagnostics\Launcher.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\src\Launcher.Data\Launcher.Data.csproj" />
   </ItemGroup>
 
 </Project>

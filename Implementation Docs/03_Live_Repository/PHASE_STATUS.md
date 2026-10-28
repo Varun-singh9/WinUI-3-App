@@ -15,7 +15,7 @@
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142). Not verified end to end: nothing is wired into Launcher.App (Task 7). Exit review below |
-| 7. Diagnostics wiring and log location | Next (ADR-0027). Plan approved with the owner's correction (ADR-0028); Patch 1 of 4 (docs only) in progress |
+| 7. Diagnostics wiring and log location | Next (ADR-0027). Design in ADR-0028. Patch 1 (docs) applied; Patch 2 (`DataLocations` and tests) added, awaiting the owner's build/test run |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numbers are the original list, not the order.
@@ -178,8 +178,13 @@ Open items carried forward (also in ADR-0027):
 5. RESOLVED (2026-10-26): the owner pushed `phase-1-core-bar` (tip 49175b0) and GitHub Actions run #11 succeeded in Debug and Release (1m 49s), per the owner's screenshot; per-test counts are not shown.
 6. Persisting the hotkey and other options through `IConfigurationService` is a later task; the options are injected for now.
 
+## Task 7 Patch 2 implementation notes (not yet verified by the owner)
+- `DataLocations` (public sealed, `Launcher.Data`) computes the per-user data paths and nothing else: it creates no folder, because the existing `JsonLinesFileSink` creates the directory when it writes. No new Core interface and no new package.
+- `DataLocations.ForCurrentUser()` gives the root `%LOCALAPPDATA%\Launcher` (the folder name is provisional, ADR-0028), the `logs` folder and `launcher.log`. A chosen root must be fully qualified; it is normalized and a trailing separator is removed. A folder name must be a single valid name: not blank, not `.` or `..`, no `< > : " / \ | ? *` or control characters, and not ending with a dot or space. That character list is explicit, so the rule is the same on any operating system. The three default names are pinned by a test because changing them moves user data.
+- Tests: 23 new in `DataLocationsTests` (`Launcher.Integration.Tests`, which now references `Launcher.Data`). Expected total after this patch: 165 tests (142 + 23).
+
 ## Next action
-Apply Task 7 Patch 1 (documentation), then Patch 2 (`DataLocations` and tests). No code changes in Patch 1. ADR-0013 stays Proposed by the owner's choice.
+Apply Task 7 Patch 2 (`DataLocations` and tests), run restore, build and test, and paste the output. Then Patch 3 (the app wiring and the first manual check). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
