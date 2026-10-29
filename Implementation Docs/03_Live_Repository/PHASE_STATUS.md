@@ -1,7 +1,7 @@
 # Phase Status — V3.0
 
 - Current phase: Phase 1 — Core + Exact Command Bar
-- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. Tasks 1, 2 and 6 are implemented as library code and verified by automated tests on the owner machine (142 of 142); nothing is wired into `Launcher.App` yet.
+- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. Tasks 1, 2 and 6 are implemented and verified by automated tests (165 of 165 across the solution). Task 7 wired them into `Launcher.App` and the first manual check on the owner machine passed (steps 1 to 4 of 5).
 - Objective: make the launcher open: global hotkey, single instance, active-monitor placement, the activation visual with the readiness coordinator, and the exact black rounded command bar with keyboard-first input and tray access (NEXT_PHASE.md).
 - Phase 0: COMPLETE — merged to `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22 (ADR-0022). Its exit review is kept below.
 
@@ -9,13 +9,13 @@
 
 | Task (NEXT_PHASE.md) | State |
 |---|---|
-| 1. Global hotkey | Implemented and verified on the owner machine (Patch 4, 73 of 73 tests, 0 skipped, so the two real-hotkey tests ran); not wired into Launcher.App; Ctrl+Win+Alt+Space not yet tried on this machine |
-| 2. Single-instance ownership | Implemented and verified on the owner machine (Patch 3, 48 of 48 tests passed); not wired into Launcher.App |
+| 1. Global hotkey | Implemented and verified (Patch 4, 73 of 73 tests). Wired in Task 7: Ctrl+Win+Alt+Space registered on the owner machine and real presses reached the lifecycle (manual run 2026-10-29) |
+| 2. Single-instance ownership | Implemented and verified (Patch 3, 48 of 48 tests). Wired in Task 7: a real second copy exited and signaled the owner (manual run 2026-10-29) |
 | 3. Active-monitor placement, bottom gap, DPI | Planned |
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
-| 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142). Not verified end to end: nothing is wired into Launcher.App (Task 7). Exit review below |
-| 7. Diagnostics wiring and log location | Next (ADR-0027). Design in ADR-0028. Patches 1 (docs) and 2 (`DataLocations`, 165 of 165 tests) verified; Patch 3 (the app wiring) added, awaiting the owner's build and the first manual check |
+| 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests (Patches 1 to 6, 142 of 142). Wired into Launcher.App in Task 7 and exercised by the first manual run (the cold path). Warm activation, ErrorRecovery and shutdown are covered by tests only. Exit review below |
+| 7. Diagnostics wiring and log location | Implemented (Patches 1 to 3). Build and 165 of 165 tests pass; first manual check steps 1 to 4 passed. Pending: step 5 (restart), the activation duration, and CI on the pushed commits. Exit notes below |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numbers are the original list, not the order.
@@ -67,6 +67,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Task 6 Patch 6 (`ApplicationRuntime`) applied on the owner machine on 2026-10-27: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 142 of 142 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - CI for the Phase 1 commits (owner's screenshot, 2026-10-27): run #11 on `49175b0`, triggered by the owner's push to `phase-1-core-bar`, concluded Success in 1m 49s, with `build-and-test (Debug)` and `build-and-test (Release)` both green. This is the first Release build and test of the Phase 1 code.
 - Task 7 Patches 1 (docs, ADR-0028) and 2 (`DataLocations` and tests) applied on the owner machine on 2026-10-28: `dotnet restore`, `dotnet build -c Debug` and `dotnet test -c Debug` succeeded; both test assemblies passed, 165 of 165 tests, 0 failed, 0 skipped. Release build was not run for these patches.
+- Task 7 Patch 3 (app wiring) applied on the owner machine on 2026-10-29: `dotnet restore`, `dotnet build -c Debug` (17 projects, including `Launcher.App`) and `dotnet test -c Debug` succeeded, 165 of 165 tests, 0 failed, 0 skipped (no new automated tests). The first manual check (steps 1 to 4) then passed; the pasted output is summarized in the Task 7 rows of `TESTS.md`. Release was not run locally for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -92,7 +93,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 | IPC model | Done as shapes: `IpcRequest`, `IpcResponse`, `IpcStatus` (payload encoding and status values provisional) |
 | Permissions | Declared in the contracts (manifest capabilities, provider permissions, risk levels); enforcement contract carried forward (ADR-0022 item 1) |
 | Provider abstraction, prefix registry, result/action model, configuration | Done as shapes (ADR-0018) |
-| Logging | Done and tested: structured diagnostics (ADR-0020), not wired into the app yet |
+| Logging | Done and tested: structured diagnostics (ADR-0020), wired into the app in Task 7 (ADR-0028) and confirmed by the first manual run |
 | Readiness states | Done as lifecycle states (`CriticalReady`); the readiness coordinator is Phase 1 work |
 | Motion System and Design System as UI infrastructure; cold-start activation design; optional providers never block activation; native WinUI 3 renderer rule | Documented (specification sections 7 to 9, ADR-0001, ADR-0006, contract comments); implementation is Phase 1 and later by design |
 
@@ -176,7 +177,7 @@ Open items carried forward (also in ADR-0027):
 1. A signal that re-focuses the input when an activation arrives while the launcher is visible: proposed in Task 5.
 2. The provisional presentation timing is revisited with its own ADR in Task 4.
 3. Decided in the Task 7 plan (ADR-0028): the critical readiness set is empty until Task 5, a second instance exits from `OnLaunched` with no custom Main, and the log location comes from `DataLocations`. The press timestamp is not used for a separate latency entry: `activation.completed` is the single record, and UI-level first-usable-input timing is left to the Task 4 and Task 5 performance measurements.
-4. Ctrl+Win+Alt+Space has not been tried on the owner machine, and no real key press has reached the lifecycle: the Task 7 manual check.
+4. RESOLVED (2026-10-29): Ctrl+Win+Alt+Space registered on the owner machine and real key presses reached the lifecycle in the first manual run (Task 7).
 5. RESOLVED (2026-10-27): the owner pushed `phase-1-core-bar` (tip 49175b0) and GitHub Actions run #11 succeeded in Debug and Release (1m 49s), per the owner's screenshot; per-test counts are not shown.
 6. Persisting the hotkey and other options through `IConfigurationService` is a later task; the options are injected for now.
 
@@ -185,7 +186,7 @@ Open items carried forward (also in ADR-0027):
 - `DataLocations.ForCurrentUser()` gives the root `%LOCALAPPDATA%\Launcher` (the folder name is provisional, ADR-0028), the `logs` folder and `launcher.log`. A chosen root must be fully qualified; it is normalized and a trailing separator is removed. A folder name must be a single valid name: not blank, not `.` or `..`, no `< > : " / \ | ? *` or control characters, and not ending with a dot or space. That character list is explicit, so the rule is the same on any operating system. The three default names are pinned by a test because changing them moves user data.
 - Tests: 23 new in `DataLocationsTests` (`Launcher.Integration.Tests`, which now references `Launcher.Data`). Expected total after this patch: 165 tests (142 + 23).
 
-## Task 7 Patch 3 implementation notes (not yet verified by the owner)
+## Task 7 Patch 3 implementation notes (build and tests verified by the owner's run; manual check steps 1 to 4 passed, see evidence above)
 - `Launcher.App` now references Core, Data, Diagnostics and Integrations (allowed by the dependency rules). `AppComposition` builds the runtime from existing types only: `JsonLinesFileSink` at `DataLocations.LogFilePath`, `DiagnosticsService` (Information and above), `LauncherLifecycle`, an empty-critical-set `ReadinessCoordinator`, `ActivationCoordinator`, `SingleInstanceOwner` (default names), `HotkeyService`, and `ApplicationRuntime` with `HotkeyDefaults.LauncherGesture` and the 5 s default. It owns the hotkey service and single-instance owner and releases them in `DisposeAsync`, after the runtime's own shutdown.
 - `App.OnLaunched` creates the composition and starts the runtime. If another launcher already owns the session, it releases and exits (no custom Main, so the second copy pays the WinUI startup cost first). A start failure is logged as `app.unhandled_exception` (type and HResult only) and the process exits with code 1. A `MainWindow` is created but never activated, so the process has a UI host.
 - `CrashLog` is the only new logging code. It writes through the same `IDiagnostics` and logs the exception type and HResult only, never the message or stack; an `AggregateException` is flattened to its distinct inner types. It is used for the startup failure and the three unhandled-exception sources (application, app domain, task scheduler). The application and app-domain handlers do not mark the exception handled.
@@ -202,8 +203,24 @@ Open items carried forward (also in ADR-0027):
 6. `Stop-Process -Name Launcher.App`, start it again and expect `single_instance.acquired` again.
 If the hotkey cannot be registered, `runtime.hotkey_unavailable` shows `hotkey.in_use` or `hotkey.register_failed`; steps 5 and 6 still work.
 
+## Task 7 exit notes (2026-10-29)
+Status: implemented. The app builds, 165 of 165 tests pass, and the first manual check passed for the process staying alive, the hotkey and the cold activation path, repeated presses being ignored, and a second copy exiting and signaling the owner. The log showed no lost lines in that run.
+
+Still pending before Task 7 is closed:
+1. Manual step 5: stop the process, start it again and confirm `single_instance.acquired` appears again (ownership is released on exit).
+2. The duration on `activation.completed`: the pasted view did not include that column.
+3. CI (Debug and Release) on the pushed Task 7 commits: the owner pushes, then the agent records the result.
+Not covered by any test: the crash-log entries (nothing triggers them without a fault), and warm activation, which cannot be checked by hand until Task 5 adds a way to deactivate.
+
+Open items carried forward:
+- Task 5 changes the critical readiness set in `AppComposition` (it is empty now) and adds the signal that re-focuses the input when an activation arrives while the launcher is visible.
+- Task 4 revisits the provisional presentation timing (ADR-0026 item 7).
+- First-usable-input timing needs the press timestamp and the UI (Tasks 4 and 5).
+- The data folder name `Launcher` is provisional (ADR-0028). If a second copy's startup cost proves noticeable, a custom Main that exits before XAML starts is the documented alternative.
+- The reference images in `Implementation Docs/References` are removed before any public release (a Release row in `TESTS.md`).
+
 ## Next action
-Apply Task 7 Patch 3, run restore, build and test (165 tests expected, no new automated tests), then run the first manual check and paste what you see. Then Patch 4 (the manual-check evidence). ADR-0013 stays Proposed by the owner's choice.
+Run manual step 5 and the duration check, push the branch, and report the CI result; the agent records them. Then plan Task 3 (placement, the first UI task); plan only, no code until it is approved. ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
