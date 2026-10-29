@@ -38,4 +38,12 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
 
+  <!-- The composition root wires the runtime together (ADR-0028); the dependency rules allow these references. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Core\Launcher.Core.csproj" />
+    <ProjectReference Include="..\Launcher.Data\Launcher.Data.csproj" />
+    <ProjectReference Include="..\Launcher.Diagnostics\Launcher.Diagnostics.csproj" />
+    <ProjectReference Include="..\Launcher.Integrations\Launcher.Integrations.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -25,7 +25,7 @@ See "Carried forward" in PHASE_STATUS.md and ADR-0022. The most important: ADR-0
 - xUnit.net v3 on Microsoft Testing Platform; CI on GitHub Actions `windows-2025`
 
 ## Next action
-Apply the pending docs patches (CI evidence is already pushed; the date corrections and the References index are new), then Task 7 Patch 3 (the app wiring and the first manual check). The design is ADR-0028. Order after Task 6 is ADR-0027: 7, 3, 5, 4, with Task 8 throughout.
+Apply Task 7 Patch 3 (the app wiring), build, test and run the first manual check described in PHASE_STATUS.md. The design is ADR-0028. Order after Task 6 is ADR-0027: 7, 3, 5, 4, with Task 8 throughout.
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

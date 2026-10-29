@@ -15,7 +15,7 @@
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests on the owner machine (Patches 1 to 6, 142 of 142). Not verified end to end: nothing is wired into Launcher.App (Task 7). Exit review below |
-| 7. Diagnostics wiring and log location | Next (ADR-0027). Design in ADR-0028. Patches 1 (docs) and 2 (`DataLocations`, 165 of 165 tests) verified; Patch 3 (the app wiring and the first manual check) is next |
+| 7. Diagnostics wiring and log location | Next (ADR-0027). Design in ADR-0028. Patches 1 (docs) and 2 (`DataLocations`, 165 of 165 tests) verified; Patch 3 (the app wiring) added, awaiting the owner's build and the first manual check |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numbers are the original list, not the order.
@@ -185,8 +185,25 @@ Open items carried forward (also in ADR-0027):
 - `DataLocations.ForCurrentUser()` gives the root `%LOCALAPPDATA%\Launcher` (the folder name is provisional, ADR-0028), the `logs` folder and `launcher.log`. A chosen root must be fully qualified; it is normalized and a trailing separator is removed. A folder name must be a single valid name: not blank, not `.` or `..`, no `< > : " / \ | ? *` or control characters, and not ending with a dot or space. That character list is explicit, so the rule is the same on any operating system. The three default names are pinned by a test because changing them moves user data.
 - Tests: 23 new in `DataLocationsTests` (`Launcher.Integration.Tests`, which now references `Launcher.Data`). Expected total after this patch: 165 tests (142 + 23).
 
+## Task 7 Patch 3 implementation notes (not yet verified by the owner)
+- `Launcher.App` now references Core, Data, Diagnostics and Integrations (allowed by the dependency rules). `AppComposition` builds the runtime from existing types only: `JsonLinesFileSink` at `DataLocations.LogFilePath`, `DiagnosticsService` (Information and above), `LauncherLifecycle`, an empty-critical-set `ReadinessCoordinator`, `ActivationCoordinator`, `SingleInstanceOwner` (default names), `HotkeyService`, and `ApplicationRuntime` with `HotkeyDefaults.LauncherGesture` and the 5 s default. It owns the hotkey service and single-instance owner and releases them in `DisposeAsync`, after the runtime's own shutdown.
+- `App.OnLaunched` creates the composition and starts the runtime. If another launcher already owns the session, it releases and exits (no custom Main, so the second copy pays the WinUI startup cost first). A start failure is logged as `app.unhandled_exception` (type and HResult only) and the process exits with code 1. A `MainWindow` is created but never activated, so the process has a UI host.
+- `CrashLog` is the only new logging code. It writes through the same `IDiagnostics` and logs the exception type and HResult only, never the message or stack; an `AggregateException` is flattened to its distinct inner types. It is used for the startup failure and the three unhandled-exception sources (application, app domain, task scheduler). The application and app-domain handlers do not mark the exception handled.
+- No second logging mechanism: the app logs nothing the runtime, lifecycle, readiness or activation components already log, and there is no separate latency entry.
+- Verification so far: CI and your build compile the App project; the types it uses were also type-checked against stand-ins for the WinUI types and the composition and crash-entry code were smoke-tested outside the project. `AppComposition` and `App.xaml.cs` have no automated test (ADR-0028 item 6): the manual check below is their verification.
+- Known limits: the launcher and a second copy write to the same log file, and a write that collides with the other process can be lost. Nothing deactivates the launcher yet, so warm activation cannot be checked until Task 5. Whether the process stays alive with no visible window is checked manually.
+
+### First manual check (Windows PowerShell, no Visual Studio needed)
+1. `dotnet build Launcher.sln -c Debug`, then start `src\Launcher.App\bin\x64\Debug\net10.0-windows10.0.26100.0\win-x64\Launcher.App.exe`.
+2. After a few seconds `Get-Process Launcher.App` must still show the process. Read the log at `$env:LOCALAPPDATA\Launcher\logs\launcher.log` and expect `runtime.starting`, `single_instance.acquired`, `hotkey.registered` and `runtime.started`.
+3. Press Ctrl+Win+Alt+Space and expect `runtime.activation_triggered` (source hotkey), `activation.requested` (kind Cold), four `lifecycle.state_changed` entries (Hidden to Activating, then CriticalReady, Morphing and Ready) and `activation.completed` (kind Cold, with a duration).
+4. Press it again and expect `activation.ignored` (state Ready).
+5. Start a second copy of the exe. It must exit by itself (`Get-Process Launcher.App` still shows one process). Expect `runtime.other_instance`, `single_instance.signal_sent`, and, from the running copy, `runtime.activation_triggered` (source second_instance) and `activation.ignored`.
+6. `Stop-Process -Name Launcher.App`, start it again and expect `single_instance.acquired` again.
+If the hotkey cannot be registered, `runtime.hotkey_unavailable` shows `hotkey.in_use` or `hotkey.register_failed`; steps 5 and 6 still work.
+
 ## Next action
-Apply the two docs patches (date corrections and the References index), then Task 7 Patch 3 (the app wiring, crash logging and the first manual check). ADR-0013 stays Proposed by the owner's choice.
+Apply Task 7 Patch 3, run restore, build and test (165 tests expected, no new automated tests), then run the first manual check and paste what you see. Then Patch 4 (the manual-check evidence). ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
