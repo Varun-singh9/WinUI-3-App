@@ -25,7 +25,7 @@ See "Carried forward" in PHASE_STATUS.md and ADR-0022. The most important: ADR-0
 - xUnit.net v3 on Microsoft Testing Platform; CI on GitHub Actions `windows-2025`
 
 ## Next action
-Finish the Task 7 checks (restart step and the activation duration), push, and report the CI result. Then plan Task 3 (placement, the first UI task; plan only). Order after Task 6 is ADR-0027: 7, 3, 5, 4, with Task 8 throughout.
+Report the CI result for the pushed Task 7 commits (push 201d116); the agent records it. Then plan Task 3 (placement, the first UI task; plan only). Order after Task 6 is ADR-0027: 7, 3, 5, 4, with Task 8 throughout.
 
 ## Rules
 Only record verified implementation facts. Do not mark code complete because it exists. Require build + tests + relevant manual verification.

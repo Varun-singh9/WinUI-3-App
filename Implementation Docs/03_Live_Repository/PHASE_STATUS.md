@@ -1,7 +1,7 @@
 # Phase Status — V3.0
 
 - Current phase: Phase 1 — Core + Exact Command Bar
-- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. Tasks 1, 2 and 6 are implemented and verified by automated tests (165 of 165 across the solution). Task 7 wired them into `Launcher.App` and the first manual check on the owner machine passed (steps 1 to 4 of 5).
+- Status: IN PROGRESS — branch `phase-1-core-bar`, started 2026-10-23. Tasks 1, 2 and 6 are implemented and verified by automated tests (165 of 165 across the solution). Task 7 wired them into `Launcher.App` and the first manual check on the owner machine passed (all five steps).
 - Objective: make the launcher open: global hotkey, single instance, active-monitor placement, the activation visual with the readiness coordinator, and the exact black rounded command bar with keyboard-first input and tray access (NEXT_PHASE.md).
 - Phase 0: COMPLETE — merged to `main` (merge commit 13482a5) and tagged `phase-0-complete` on 2026-10-22 (ADR-0022). Its exit review is kept below.
 
@@ -15,7 +15,7 @@
 | 4. Activation visual and readiness coordinator | Planned. The readiness coordinator moved to Task 6 (ADR-0026). The visual and the Morphing-to-Ready rule stay here, and Task 4 revisits the provisional timing (ADR-0026 item 7) |
 | 5. Command bar UI, tray access | Planned |
 | 6. Lifecycle implementation behind Core contracts | Implemented and verified by automated tests (Patches 1 to 6, 142 of 142). Wired into Launcher.App in Task 7 and exercised by the first manual run (the cold path). Warm activation, ErrorRecovery and shutdown are covered by tests only. Exit review below |
-| 7. Diagnostics wiring and log location | Implemented (Patches 1 to 3). Build and 165 of 165 tests pass; first manual check steps 1 to 4 passed. Pending: step 5 (restart), the activation duration, and CI on the pushed commits. Exit notes below |
+| 7. Diagnostics wiring and log location | Implemented (Patches 1 to 3). Build and 165 of 165 tests pass, and the first manual check passed in full, including the restart and a measured cold activation of about 19 ms. Pending: CI on the pushed commits (201d116). Exit notes below |
 | 8. Test projects with first real tests | `Launcher.Integration.Tests` verified (Patch 4, 73 of 73 across both assemblies) |
 
 Order after Task 6 (ADR-0027): 7, then 3, 5, 4; Task 8 throughout. The task numbers are the original list, not the order.
@@ -67,7 +67,7 @@ Contract additions made under ADR-0018's "record each addition" rule (all in `La
 - Task 6 Patch 6 (`ApplicationRuntime`) applied on the owner machine on 2026-10-27: `dotnet restore`, `dotnet build -c Debug` (17 projects) and `dotnet test -c Debug` succeeded; both test assemblies passed, 142 of 142 tests, 0 failed, 0 skipped. Release build was not run for this patch.
 - CI for the Phase 1 commits (owner's screenshot, 2026-10-27): run #11 on `49175b0`, triggered by the owner's push to `phase-1-core-bar`, concluded Success in 1m 49s, with `build-and-test (Debug)` and `build-and-test (Release)` both green. This is the first Release build and test of the Phase 1 code.
 - Task 7 Patches 1 (docs, ADR-0028) and 2 (`DataLocations` and tests) applied on the owner machine on 2026-10-28: `dotnet restore`, `dotnet build -c Debug` and `dotnet test -c Debug` succeeded; both test assemblies passed, 165 of 165 tests, 0 failed, 0 skipped. Release build was not run for these patches.
-- Task 7 Patch 3 (app wiring) applied on the owner machine on 2026-10-29: `dotnet restore`, `dotnet build -c Debug` (17 projects, including `Launcher.App`) and `dotnet test -c Debug` succeeded, 165 of 165 tests, 0 failed, 0 skipped (no new automated tests). The first manual check (steps 1 to 4) then passed; the pasted output is summarized in the Task 7 rows of `TESTS.md`. Release was not run locally for this patch.
+- Task 7 Patch 3 (app wiring) applied on the owner machine on 2026-10-29: `dotnet restore`, `dotnet build -c Debug` (17 projects, including `Launcher.App`) and `dotnet test -c Debug` succeeded, 165 of 165 tests, 0 failed, 0 skipped (no new automated tests). The first manual check then passed (steps 1 to 4 first, then step 5 and the duration check); the pasted output is summarized in the Task 7 rows of `TESTS.md`. Release was not run locally for this patch.
 
 ## Patch 3 implementation notes (verified by the owner's run, see evidence above)
 - `SingleInstanceOwner` and `SingleInstanceNames` in `Launcher.Integrations/SingleInstance`; no new packages (the ACL APIs are part of the shared framework).
@@ -204,12 +204,11 @@ Open items carried forward (also in ADR-0027):
 If the hotkey cannot be registered, `runtime.hotkey_unavailable` shows `hotkey.in_use` or `hotkey.register_failed`; steps 5 and 6 still work.
 
 ## Task 7 exit notes (2026-10-29)
-Status: implemented. The app builds, 165 of 165 tests pass, and the first manual check passed for the process staying alive, the hotkey and the cold activation path, repeated presses being ignored, and a second copy exiting and signaling the owner. The log showed no lost lines in that run.
+Status: implemented. The app builds, 165 of 165 tests pass, and the first manual check passed in full: the process staying alive, the hotkey and the cold activation path (about 19 ms), repeated presses being ignored, a second copy exiting and signaling the owner, and a restart taking ownership and the hotkey again. The log showed no lost lines in that run.
 
-Still pending before Task 7 is closed:
-1. Manual step 5: stop the process, start it again and confirm `single_instance.acquired` appears again (ownership is released on exit).
-2. The duration on `activation.completed`: the pasted view did not include that column.
-3. CI (Debug and Release) on the pushed Task 7 commits: the owner pushes, then the agent records the result.
+Done since the first pasted output: manual step 5 (two restarts after `Stop-Process` each logged `single_instance.acquired`, `hotkey.registered` and `runtime.started`) and the duration check (the raw `activation.completed` line carried `Duration` 00:00:00.0194374 with kind Cold, about 19 ms).
+
+Still pending before Task 7 is closed: CI (Debug and Release) on the pushed Task 7 commits (push `201d116`, 2026-10-29). The agent records the result when the owner reports it.
 Not covered by any test: the crash-log entries (nothing triggers them without a fault), and warm activation, which cannot be checked by hand until Task 5 adds a way to deactivate.
 
 Open items carried forward:
@@ -220,7 +219,7 @@ Open items carried forward:
 - The reference images in `Implementation Docs/References` are removed before any public release (a Release row in `TESTS.md`).
 
 ## Next action
-Run manual step 5 and the duration check, push the branch, and report the CI result; the agent records them. Then plan Task 3 (placement, the first UI task); plan only, no code until it is approved. ADR-0013 stays Proposed by the owner's choice.
+Report the CI result for push 201d116 (the Actions tab or a screenshot); the agent records it. Then plan Task 3 (placement, the first UI task); plan only, no code until it is approved. ADR-0013 stays Proposed by the owner's choice.
 
 ## Rollback point
 Tag `phase-0-complete` (merge commit 13482a5 on `main`). Before Phase 0: commit 043d875, the V3.0 documentation freeze.
